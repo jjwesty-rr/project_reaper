@@ -16,7 +16,7 @@ const Profile = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -45,15 +45,15 @@ const Profile = () => {
         setFullName(profile.full_name || "");
       }
 
-      // Check if user is admin or super_admin
+      // Check if user is super_admin
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id);
 
       if (roles && roles.length > 0) {
-        const hasAdminRole = roles.some(r => r.role === 'admin' || r.role === 'super_admin');
-        setIsAdmin(hasAdminRole);
+        const hasSuperAdminRole = roles.some(r => r.role === 'super_admin');
+        setIsSuperAdmin(hasSuperAdminRole);
       }
     } catch (error: any) {
       toast({
@@ -252,7 +252,7 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          {isAdmin && (
+          {isSuperAdmin && (
             <>
               <Separator />
               <Card>
