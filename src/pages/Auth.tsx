@@ -10,6 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Mail } from "lucide-react";
 import { z } from "zod";
 
+// Feature flag to enable/disable sign up functionality
+const ENABLE_SIGNUP = false;
+
 const authSchema = z.object({
   email: z.string().email("Invalid email address").max(255, "Email too long"),
   password: z.string().min(6, "Password must be at least 6 characters").max(100, "Password too long"),
@@ -223,17 +226,19 @@ const Auth = () => {
             </Button>
           </form>
 
-          <div className="text-center text-sm">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary hover:underline"
-            >
-              {isSignUp
-                ? "Already have an account? Sign in"
-                : "Don't have an account? Sign up"}
-            </button>
-          </div>
+          {ENABLE_SIGNUP && (
+            <div className="text-center text-sm">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-primary hover:underline"
+              >
+                {isSignUp
+                  ? "Already have an account? Sign in"
+                  : "Don't have an account? Sign up"}
+              </button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
