@@ -53,15 +53,13 @@ export default function Admin() {
         return;
       }
 
-      // Not an admin - check if this is the first user
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
+      // Not an admin - check if any super admin exists (initial setup)
+      const { data: superAdminExists, error: superAdminExistsError } = await supabase
+        .rpc('super_admin_exists');
 
-      if (rolesError) throw rolesError;
+      if (superAdminExistsError) throw superAdminExistsError;
 
-      if (!roles || roles.length === 0) {
+      if (!superAdminExists) {
         // First time setup - make this user super admin
         const { error: insertError } = await supabase
           .from('user_roles')
