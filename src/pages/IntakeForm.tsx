@@ -3,6 +3,11 @@ import { Card } from "@/components/ui/card";
 import { FormProgress } from "@/components/intake/FormProgress";
 import { ContactInfoStep } from "@/components/intake/ContactInfoStep";
 import { DecedentInfoStep } from "@/components/intake/DecedentInfoStep";
+import { FamilyInfoStep } from "@/components/intake/FamilyInfoStep";
+import { RepresentativeStep } from "@/components/intake/RepresentativeStep";
+import { TrustBeneficiaryStep } from "@/components/intake/TrustBeneficiaryStep";
+import { AssetsStep } from "@/components/intake/AssetsStep";
+import { ReviewStep } from "@/components/intake/ReviewStep";
 import { IntakeFormData } from "@/types/intake";
 
 const steps = [
@@ -54,21 +59,63 @@ const IntakeForm = () => {
             onBack={handleBack}
           />
         );
-      default:
+      case 3:
         return (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-semibold mb-2">Step {currentStep} Coming Soon</h3>
-            <p className="text-muted-foreground mb-6">This step is under construction.</p>
-            <div className="flex gap-4 justify-center">
-              <button onClick={handleBack} className="px-4 py-2 border rounded">
-                Back
-              </button>
-              <button onClick={handleNext} className="px-4 py-2 bg-primary text-primary-foreground rounded">
-                Continue
-              </button>
-            </div>
-          </div>
+          <FamilyInfoStep
+            data={formData}
+            onNext={(data) => {
+              updateFormData(data);
+              handleNext();
+            }}
+            onBack={handleBack}
+          />
         );
+      case 4:
+        return (
+          <RepresentativeStep
+            data={formData}
+            onNext={(data) => {
+              updateFormData(data);
+              handleNext();
+            }}
+            onBack={handleBack}
+          />
+        );
+      case 5:
+        return (
+          <TrustBeneficiaryStep
+            data={formData}
+            onNext={(data) => {
+              updateFormData(data);
+              handleNext();
+            }}
+            onBack={handleBack}
+          />
+        );
+      case 6:
+        return (
+          <AssetsStep
+            data={formData}
+            onNext={(data) => {
+              updateFormData(data);
+              handleNext();
+            }}
+            onBack={handleBack}
+          />
+        );
+      case 7:
+        return (
+          <ReviewStep
+            data={formData}
+            onBack={handleBack}
+            onSubmit={() => {
+              // Here you would typically send data to backend
+              console.log("Form submitted:", formData);
+            }}
+          />
+        );
+      default:
+        return null;
     }
   };
 
