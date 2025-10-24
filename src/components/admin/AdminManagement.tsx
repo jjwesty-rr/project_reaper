@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Shield, UserPlus, UserMinus } from 'lucide-react';
+import { Shield, UserPlus, UserMinus, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface User {
   id: string;
@@ -25,6 +26,9 @@ export function AdminManagement() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'user' | 'super_admin'>('user');
   const [inviting, setInviting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -138,6 +142,34 @@ export function AdminManagement() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { userId: userToDelete.id }
+      });
+
+      if (error) throw error;
+
+      toast.success(`User ${userToDelete.email} deleted successfully`);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error(error.message || 'Failed to delete user');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openDeleteDialog = (user: User) => {
+    setUserToDelete(user);
+    setDeleteDialogOpen(true);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -230,29 +262,39 @@ export function AdminManagement() {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{getRoleBadge(user.roles)}</TableCell>
                   <TableCell className="text-right">
-                    {canModifyRole(user.roles) && (
-                      <>
-                        {user.roles.includes('admin') ? (
+                    <div className="flex justify-end gap-2">
+                      {canModifyRole(user.roles) && (
+                        <>
+                          {user.roles.includes('admin') ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRevokeAdmin(user.id)}
+                            >
+                              <UserMinus className="h-4 w-4 mr-2" />
+                              Revoke Admin
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleGrantAdmin(user.id)}
+                            >
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Grant Admin
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleRevokeAdmin(user.id)}
+                            onClick={() => openDeleteDialog(user)}
                           >
-                            <UserMinus className="h-4 w-4 mr-2" />
-                            Revoke Admin
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
                           </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleGrantAdmin(user.id)}
-                          >
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Grant Admin
-                          </Button>
-                        )}
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -260,6 +302,28 @@ export function AdminManagement() {
           </TableBody>
         </Table>
       </CardContent>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {userToDelete?.email}? This action cannot be undone.
+              All user data, roles, and submissions will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={deleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleting ? 'Deleting...' : 'Delete User'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
