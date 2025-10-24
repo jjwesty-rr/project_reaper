@@ -23,7 +23,7 @@ export function AdminManagement() {
   const [loading, setLoading] = useState(true);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'user' | 'super_admin'>('user');
   const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
@@ -182,13 +182,14 @@ export function AdminManagement() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
-                  <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as 'admin' | 'user')}>
+                  <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as 'admin' | 'user' | 'super_admin')}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="user">User</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="super_admin">Super Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
