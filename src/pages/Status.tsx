@@ -214,6 +214,9 @@ const Status = () => {
                 <Button variant="outline">
                   Contact Support
                 </Button>
+                <Button variant="outline" onClick={() => navigate(`/intake?edit=${submission.id}`)}>
+                  Edit Submission
+                </Button>
                 <Button onClick={() => navigate("/")}>
                   <Home className="mr-2 h-4 w-4" />
                   Return Home

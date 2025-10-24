@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { FormProgress } from "@/components/intake/FormProgress";
@@ -26,7 +26,9 @@ const IntakeForm = () => {
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<IntakeFormData>({});
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     checkAuth();
@@ -37,6 +39,46 @@ const IntakeForm = () => {
     if (!session) {
       navigate("/auth");
     } else {
+      const editId = searchParams.get('edit');
+      if (editId) {
+        await loadExistingSubmission(editId, session.user.id);
+      } else {
+        setLoading(false);
+      }
+    }
+  };
+
+  const loadExistingSubmission = async (id: string, userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("intake_submissions")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setSubmissionId(data.id);
+        setFormData({
+          contactInfo: data.contact_info as any,
+          decedentInfo: data.decedent_info as any,
+          isMarried: (data.family_info as any)?.is_married,
+          spouseInfo: (data.family_info as any)?.spouse_info,
+          hasChildren: (data.family_info as any)?.has_children,
+          children: (data.family_info as any)?.children,
+          representativeInfo: data.representative_info as any,
+          hasTrust: (data.trust_beneficiary_info as any)?.has_trust,
+          hasContestingBeneficiaries: (data.trust_beneficiary_info as any)?.has_contesting_beneficiaries,
+          contestingBeneficiariesInfo: (data.trust_beneficiary_info as any)?.contesting_beneficiaries_info,
+          assets: data.assets as any,
+          totalNetAssetValue: data.total_estimated_value as number,
+        });
+      }
+    } catch (error) {
+      console.error("Error loading submission:", error);
+    } finally {
       setLoading(false);
     }
   };
@@ -133,6 +175,7 @@ const IntakeForm = () => {
           <ReviewStep
             data={formData}
             onBack={handleBack}
+            submissionId={submissionId}
           />
         );
       default:

@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 interface ReviewStepProps {
   data: IntakeFormData;
   onBack: () => void;
+  submissionId?: string | null;
 }
 
 const REFERRAL_TYPE_INFO = {
@@ -38,7 +39,7 @@ const REFERRAL_TYPE_INFO = {
   },
 };
 
-export const ReviewStep = ({ data, onBack }: ReviewStepProps) => {
+export const ReviewStep = ({ data, onBack, submissionId }: ReviewStepProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
@@ -54,37 +55,62 @@ export const ReviewStep = ({ data, onBack }: ReviewStepProps) => {
         throw new Error("User not authenticated");
       }
 
-      const { data: submission, error } = await supabase
-        .from("intake_submissions")
-        .insert([{
-          user_id: user.id,
-          referral_type: referralInfo.title,
-          contact_info: data.contactInfo as any,
-          decedent_info: data.decedentInfo as any,
-          family_info: {
-            is_married: data.isMarried,
-            has_children: data.hasChildren,
-            spouse_info: data.spouseInfo,
-            children: data.children,
-          } as any,
-          representative_info: data.representativeInfo as any,
-          trust_beneficiary_info: {
-            has_trust: data.hasTrust,
-            has_contesting_beneficiaries: data.hasContestingBeneficiaries,
-            contesting_beneficiaries_info: data.contestingBeneficiariesInfo,
-          } as any,
-          assets: data.assets as any,
-          total_estimated_value: data.totalNetAssetValue,
-        }])
-        .select()
-        .single();
+      const submissionData = {
+        user_id: user.id,
+        referral_type: referralInfo.title,
+        contact_info: data.contactInfo as any,
+        decedent_info: data.decedentInfo as any,
+        family_info: {
+          is_married: data.isMarried,
+          has_children: data.hasChildren,
+          spouse_info: data.spouseInfo,
+          children: data.children,
+        } as any,
+        representative_info: data.representativeInfo as any,
+        trust_beneficiary_info: {
+          has_trust: data.hasTrust,
+          has_contesting_beneficiaries: data.hasContestingBeneficiaries,
+          contesting_beneficiaries_info: data.contestingBeneficiariesInfo,
+        } as any,
+        assets: data.assets as any,
+        total_estimated_value: data.totalNetAssetValue,
+      };
 
-      if (error) throw error;
+      let submission;
 
-      toast({
-        title: "Form Submitted Successfully!",
-        description: "Redirecting to your submission status...",
-      });
+      if (submissionId) {
+        // Update existing submission
+        const { data: updatedData, error } = await supabase
+          .from("intake_submissions")
+          .update(submissionData)
+          .eq("id", submissionId)
+          .eq("user_id", user.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        submission = updatedData;
+
+        toast({
+          title: "Form Updated Successfully!",
+          description: "Your submission has been updated.",
+        });
+      } else {
+        // Create new submission
+        const { data: newData, error } = await supabase
+          .from("intake_submissions")
+          .insert([submissionData])
+          .select()
+          .single();
+
+        if (error) throw error;
+        submission = newData;
+
+        toast({
+          title: "Form Submitted Successfully!",
+          description: "Redirecting to your submission status...",
+        });
+      }
 
       navigate(`/status/${submission.id}`);
     } catch (error: any) {
@@ -220,7 +246,7 @@ export const ReviewStep = ({ data, onBack }: ReviewStepProps) => {
           Back
         </Button>
         <Button onClick={handleSubmit} size="lg" disabled={submitting}>
-          {submitting ? "Submitting..." : "Submit Form"}
+          {submitting ? (submissionId ? "Updating..." : "Submitting...") : (submissionId ? "Update Form" : "Submit Form")}
         </Button>
       </div>
     </div>
