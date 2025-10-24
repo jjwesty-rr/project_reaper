@@ -1,16 +1,25 @@
 import { IntakeFormData } from '@/types/intake';
+import { supabase } from '@/integrations/supabase/client';
 
-// Small estate limits by state (simplified - you'll need to update with actual limits)
-const SMALL_ESTATE_LIMITS: Record<string, number> = {
-  'California': 184500,
-  'Texas': 75000,
-  'Florida': 75000,
-  'New York': 50000,
-  // Add more states as needed
-  'default': 50000
+export const getStateLimits = async (): Promise<Record<string, number>> => {
+  const { data, error } = await supabase
+    .from('state_estate_limits')
+    .select('state, limit_amount');
+  
+  if (error || !data) {
+    console.error('Error fetching state limits:', error);
+    return { 'default': 50000 };
+  }
+  
+  const limits: Record<string, number> = {};
+  data.forEach(item => {
+    limits[item.state] = Number(item.limit_amount);
+  });
+  
+  return limits;
 };
 
-export const determineReferralType = (data: IntakeFormData): IntakeFormData['referralType'] => {
+export const determineReferralType = async (data: IntakeFormData): Promise<IntakeFormData['referralType']> => {
   const { hasTrust, hasContestingBeneficiaries, totalNetAssetValue, decedentInfo, assets } = data;
   
   // Trust Administration: If trust exists
@@ -33,7 +42,8 @@ export const determineReferralType = (data: IntakeFormData): IntakeFormData['ref
     0
   );
   
-  const smallEstateLimit = SMALL_ESTATE_LIMITS[decedentInfo?.domicileState || 'default'] || SMALL_ESTATE_LIMITS.default;
+  const stateLimits = await getStateLimits();
+  const smallEstateLimit = stateLimits[decedentInfo?.domicileState || 'default'] || stateLimits.default || 50000;
   
   // Affidavits: Value is less than or equal to small estate limit
   if (eligibleAssetValue <= smallEstateLimit) {

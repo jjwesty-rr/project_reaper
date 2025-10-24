@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { User, Lock, ArrowLeft } from "lucide-react";
+import { User, Lock, ArrowLeft, Shield } from "lucide-react";
 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
@@ -16,6 +16,7 @@ const Profile = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -42,6 +43,17 @@ const Profile = () => {
 
       if (profile) {
         setFullName(profile.full_name || "");
+      }
+
+      // Check if user is admin or super_admin
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      if (roles && roles.length > 0) {
+        const hasAdminRole = roles.some(r => r.role === 'admin' || r.role === 'super_admin');
+        setIsAdmin(hasAdminRole);
       }
     } catch (error: any) {
       toast({
@@ -239,6 +251,33 @@ const Profile = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {isAdmin && (
+            <>
+              <Separator />
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    Admin Access
+                  </CardTitle>
+                  <CardDescription>
+                    You have administrative privileges
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={() => navigate("/admin")}
+                    className="w-full"
+                    variant="default"
+                  >
+                    <Shield className="mr-2 h-4 w-4" />
+                    Open Admin Portal
+                  </Button>
+                </CardContent>
+              </Card>
+            </>
+          )}
 
           <Separator />
 

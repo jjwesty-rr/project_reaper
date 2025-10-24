@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,8 +43,31 @@ export const ReviewStep = ({ data, onBack, submissionId }: ReviewStepProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const referralType = determineReferralType(data);
-  const referralInfo = REFERRAL_TYPE_INFO[referralType!];
+  const [referralType, setReferralType] = useState<IntakeFormData['referralType']>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadReferralType = async () => {
+      setLoading(true);
+      const type = await determineReferralType(data);
+      setReferralType(type);
+      setLoading(false);
+    };
+    loadReferralType();
+  }, [data]);
+
+  if (loading || !referralType) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Analyzing estate information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const referralInfo = REFERRAL_TYPE_INFO[referralType];
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -55,9 +78,11 @@ export const ReviewStep = ({ data, onBack, submissionId }: ReviewStepProps) => {
         throw new Error("User not authenticated");
       }
 
+      const finalReferralType = await determineReferralType(data);
+
       const submissionData = {
         user_id: user.id,
-        referral_type: referralInfo.title,
+        referral_type: finalReferralType,
         contact_info: data.contactInfo as any,
         decedent_info: data.decedentInfo as any,
         family_info: {
