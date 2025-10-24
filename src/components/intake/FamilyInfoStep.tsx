@@ -50,6 +50,19 @@ export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) =>
   const watchIsMarried = form.watch("isMarried");
   const watchHasChildren = form.watch("hasChildren");
 
+  const formatPhoneNumber = (value: string) => {
+    const phoneNumber = value.replace(/\D/g, '');
+    const limitedNumber = phoneNumber.slice(0, 10);
+    
+    if (limitedNumber.length <= 3) {
+      return limitedNumber;
+    } else if (limitedNumber.length <= 6) {
+      return `(${limitedNumber.slice(0, 3)}) ${limitedNumber.slice(3)}`;
+    } else {
+      return `(${limitedNumber.slice(0, 3)}) ${limitedNumber.slice(3, 6)}-${limitedNumber.slice(6)}`;
+    }
+  };
+
   const addChild = () => {
     setChildren([...children, { name: "", email: "", phone: "", address: "" }]);
   };
@@ -166,7 +179,14 @@ export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) =>
                     <FormItem>
                       <FormLabel>Phone</FormLabel>
                       <FormControl>
-                        <Input placeholder="(555) 123-4567" {...field} />
+                        <Input 
+                          placeholder="(555) 123-4567" 
+                          value={field.value}
+                          onChange={(e) => {
+                            const formatted = formatPhoneNumber(e.target.value);
+                            field.onChange(formatted);
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -257,7 +277,10 @@ export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) =>
                     <Input
                       placeholder="Phone"
                       value={child.phone}
-                      onChange={(e) => updateChild(index, "phone", e.target.value)}
+                      onChange={(e) => {
+                        const formatted = formatPhoneNumber(e.target.value);
+                        updateChild(index, "phone", formatted);
+                      }}
                     />
                   </div>
 
