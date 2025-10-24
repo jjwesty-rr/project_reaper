@@ -21,14 +21,26 @@ const authSchema = z.object({
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check if user is coming from password reset email
+    const urlParams = new URLSearchParams(window.location.search);
+    const isPasswordReset = urlParams.get('reset') === 'true';
+    
+    if (isPasswordReset) {
+      setIsResettingPassword(true);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate("/home");
@@ -36,7 +48,7 @@ const Auth = () => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      if (session && !isPasswordReset) {
         navigate("/home");
       }
     });
@@ -151,15 +163,65 @@ const Auth = () => {
     }
   };
 
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (newPassword !== confirmPassword) {
+        toast({
+          title: "Error",
+          description: "Passwords do not match",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        toast({
+          title: "Error",
+          description: "Password must be at least 6 characters",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password Updated",
+        description: "Your password has been successfully updated.",
+      });
+      
+      navigate("/home");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">
-            {isForgotPassword ? "Reset Password" : isSignUp ? "Create an account" : "Welcome back"}
+            {isResettingPassword ? "Set New Password" : isForgotPassword ? "Reset Password" : isSignUp ? "Create an account" : "Welcome back"}
           </CardTitle>
           <CardDescription className="text-center">
-            {isForgotPassword
+            {isResettingPassword
+              ? "Enter your new password below"
+              : isForgotPassword
               ? "Enter your email to receive a password reset link"
               : isSignUp
               ? "Sign up to get started with your estate settlement intake"
@@ -167,17 +229,49 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isForgotPassword && (
-            <Button
-              variant="ghost"
-              onClick={() => setIsForgotPassword(false)}
-              className="mb-2"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to login
-            </Button>
-          )}
-          <div className="grid grid-cols-2 gap-4">
+          {isResettingPassword ? (
+            <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Updating..." : "Update Password"}
+              </Button>
+            </form>
+          ) : (
+            <>
+              {isForgotPassword && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsForgotPassword(false)}
+                  className="mb-2"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to login
+                </Button>
+              )}
+              <div className="grid grid-cols-2 gap-4">
             <Button
               variant="outline"
               onClick={() => handleSocialAuth("google")}
@@ -292,9 +386,11 @@ const Auth = () => {
               >
                 {isSignUp
                   ? "Already have an account? Sign in"
-                  : "Don't have an account? Sign up"}
+              : "Don't have an account? Sign up"}
               </button>
             </div>
+          )}
+            </>
           )}
         </CardContent>
       </Card>
