@@ -8,6 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { z } from 'zod';
+
+const stateLimitSchema = z.object({
+  state: z.string().trim().min(2, "State name too short").max(50, "State name too long"),
+  limit_amount: z.number().positive("Amount must be positive").max(100000000, "Amount too large"),
+});
 
 interface StateLimit {
   id: string;
@@ -64,8 +70,20 @@ export function StateLimitsManagement() {
 
     try {
       const amount = parseFloat(formAmount);
-      if (isNaN(amount) || amount < 0) {
+      if (isNaN(amount)) {
         toast.error('Please enter a valid amount');
+        return;
+      }
+
+      // Validate input
+      const validationResult = stateLimitSchema.safeParse({ 
+        state: formState, 
+        limit_amount: amount 
+      });
+      
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(e => e.message).join(", ");
+        toast.error(errors);
         return;
       }
 

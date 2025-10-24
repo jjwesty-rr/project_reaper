@@ -61,6 +61,12 @@ serve(async (req) => {
       throw new Error('Email is required');
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error('Invalid email format');
+    }
+
     console.log(`Inviting user: ${email} with role: ${role}`);
 
     // Invite user using Supabase Auth Admin API

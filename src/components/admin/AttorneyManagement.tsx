@@ -10,6 +10,14 @@ import { Pencil, Trash2, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { z } from 'zod';
+
+const attorneySchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name too long"),
+  email: z.string().email("Invalid email address").max(255, "Email too long"),
+  phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number too long"),
+  location: z.string().trim().min(1, "Location is required").max(100, "Location too long"),
+});
 
 interface Attorney {
   id: string;
@@ -83,6 +91,20 @@ export function AttorneyManagement() {
   const handleSave = async () => {
     if (!formData.name || !formData.email || !formData.phone || !formData.location) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    // Validate input
+    const validationResult = attorneySchema.safeParse({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      location: formData.location,
+    });
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(e => e.message).join(", ");
+      toast.error(errors);
       return;
     }
 
