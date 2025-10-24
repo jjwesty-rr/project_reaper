@@ -36,6 +36,23 @@ export const ContactInfoStep = ({ data, onNext }: ContactInfoStepProps) => {
     },
   });
 
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-numeric characters
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Limit to 10 digits
+    const limitedNumber = phoneNumber.slice(0, 10);
+    
+    // Format as (XXX) XXX-XXXX
+    if (limitedNumber.length <= 3) {
+      return limitedNumber;
+    } else if (limitedNumber.length <= 6) {
+      return `(${limitedNumber.slice(0, 3)}) ${limitedNumber.slice(3)}`;
+    } else {
+      return `(${limitedNumber.slice(0, 3)}) ${limitedNumber.slice(3, 6)}-${limitedNumber.slice(6)}`;
+    }
+  };
+
   const onSubmit = (values: z.infer<typeof contactInfoSchema>) => {
     onNext(values);
   };
@@ -74,7 +91,14 @@ export const ContactInfoStep = ({ data, onNext }: ContactInfoStepProps) => {
               <FormItem>
                 <FormLabel>Phone Number</FormLabel>
                 <FormControl>
-                  <Input placeholder="(555) 123-4567" {...field} />
+                  <Input 
+                    placeholder="(555) 123-4567" 
+                    value={field.value}
+                    onChange={(e) => {
+                      const formatted = formatPhoneNumber(e.target.value);
+                      field.onChange(formatted);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
