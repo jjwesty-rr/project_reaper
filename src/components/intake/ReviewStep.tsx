@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,11 +7,12 @@ import { CheckCircle2, AlertCircle } from "lucide-react";
 import { IntakeFormData } from "@/types/intake";
 import { determineReferralType } from "@/lib/intakeLogic";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface ReviewStepProps {
   data: IntakeFormData;
   onBack: () => void;
-  onSubmit: () => void;
 }
 
 const REFERRAL_TYPE_INFO = {
@@ -36,17 +38,65 @@ const REFERRAL_TYPE_INFO = {
   },
 };
 
-export const ReviewStep = ({ data, onBack, onSubmit }: ReviewStepProps) => {
+export const ReviewStep = ({ data, onBack }: ReviewStepProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
   const referralType = determineReferralType(data);
   const referralInfo = REFERRAL_TYPE_INFO[referralType!];
 
-  const handleSubmit = () => {
-    toast({
-      title: "Form Submitted Successfully!",
-      description: "We'll connect you with an appropriate attorney shortly.",
-    });
-    onSubmit();
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
+      const { data: submission, error } = await supabase
+        .from("intake_submissions")
+        .insert([{
+          user_id: user.id,
+          referral_type: referralInfo.title,
+          contact_info: data.contactInfo as any,
+          decedent_info: data.decedentInfo as any,
+          family_info: {
+            is_married: data.isMarried,
+            has_children: data.hasChildren,
+            spouse_info: data.spouseInfo,
+            children: data.children,
+          } as any,
+          representative_info: data.representativeInfo as any,
+          trust_beneficiary_info: {
+            has_trust: data.hasTrust,
+            has_contesting_beneficiaries: data.hasContestingBeneficiaries,
+            contesting_beneficiaries_info: data.contestingBeneficiariesInfo,
+          } as any,
+          assets: data.assets as any,
+          total_estimated_value: data.totalNetAssetValue,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Form Submitted Successfully!",
+        description: "Redirecting to your submission status...",
+      });
+
+      navigate(`/status/${submission.id}`);
+    } catch (error: any) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit form. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -166,11 +216,11 @@ export const ReviewStep = ({ data, onBack, onSubmit }: ReviewStepProps) => {
       </Card>
 
       <div className="flex justify-between pt-4">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="outline" onClick={onBack} disabled={submitting}>
           Back
         </Button>
-        <Button onClick={handleSubmit} size="lg">
-          Submit Form
+        <Button onClick={handleSubmit} size="lg" disabled={submitting}>
+          {submitting ? "Submitting..." : "Submit Form"}
         </Button>
       </div>
     </div>

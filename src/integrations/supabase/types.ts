@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      intake_submissions: {
+        Row: {
+          assets: Json | null
+          contact_info: Json | null
+          created_at: string
+          decedent_info: Json | null
+          family_info: Json | null
+          id: string
+          referral_type: string
+          representative_info: Json | null
+          status: string
+          total_estimated_value: number | null
+          trust_beneficiary_info: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assets?: Json | null
+          contact_info?: Json | null
+          created_at?: string
+          decedent_info?: Json | null
+          family_info?: Json | null
+          id?: string
+          referral_type: string
+          representative_info?: Json | null
+          status?: string
+          total_estimated_value?: number | null
+          trust_beneficiary_info?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assets?: Json | null
+          contact_info?: Json | null
+          created_at?: string
+          decedent_info?: Json | null
+          family_info?: Json | null
+          id?: string
+          referral_type?: string
+          representative_info?: Json | null
+          status?: string
+          total_estimated_value?: number | null
+          trust_beneficiary_info?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

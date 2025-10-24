@@ -133,10 +133,6 @@ const IntakeForm = () => {
           <ReviewStep
             data={formData}
             onBack={handleBack}
-            onSubmit={() => {
-              // Here you would typically send data to backend
-              console.log("Form submitted:", formData);
-            }}
           />
         );
       default:
