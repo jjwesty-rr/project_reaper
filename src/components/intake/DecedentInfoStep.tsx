@@ -39,7 +39,7 @@ const decedentInfoSchema = z.object({
   dateOfBirth: z.string().min(1, "Date of birth is required"),
   dateOfDeath: z.string().min(1, "Date of death is required"),
   domicileState: z.string().min(1, "State of domicile is required").max(50),
-  diedInDomicileState: z.enum(["yes", "no"]),
+  diedInDomicileState: z.enum(["yes", "no"], { required_error: "Please select an option" }),
   stateOfDeath: z.string().max(50).optional(),
 });
 
@@ -57,7 +57,7 @@ export const DecedentInfoStep = ({ data, onNext, onBack }: DecedentInfoStepProps
       dateOfBirth: data?.dateOfBirth || "",
       dateOfDeath: data?.dateOfDeath || "",
       domicileState: data?.domicileState || "",
-      diedInDomicileState: data?.diedInDomicileState ? "yes" : "no",
+      diedInDomicileState: data?.diedInDomicileState !== undefined ? (data.diedInDomicileState ? "yes" : "no") : undefined,
       stateOfDeath: data?.stateOfDeath || "",
     },
   });

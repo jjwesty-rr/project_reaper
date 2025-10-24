@@ -20,7 +20,7 @@ import { IntakeFormData } from "@/types/intake";
 
 const representativeSchema = z.object({
   relationshipToDecedent: z.string().min(1, "Relationship is required").max(100),
-  isExecutor: z.enum(["yes", "no"]),
+  isExecutor: z.enum(["yes", "no"], { required_error: "Please select an option" }),
   representativeName: z.string().max(100).optional(),
   representativeEmail: z.string().email().max(255).optional().or(z.literal("")),
   representativePhone: z.string().max(20).optional(),
@@ -39,7 +39,7 @@ export const RepresentativeStep = ({ data, onNext, onBack }: RepresentativeStepP
     resolver: zodResolver(representativeSchema),
     defaultValues: {
       relationshipToDecedent: data?.contactInfo?.relationshipToDecedent || "",
-      isExecutor: data?.contactInfo?.isExecutor ? "yes" : "no",
+      isExecutor: data?.contactInfo?.isExecutor !== undefined ? (data.contactInfo.isExecutor ? "yes" : "no") : undefined,
       representativeName: data?.representativeInfo?.name || "",
       representativeEmail: data?.representativeInfo?.email || "",
       representativePhone: data?.representativeInfo?.phone || "",

@@ -18,12 +18,12 @@ import { Plus, Trash2 } from "lucide-react";
 import { IntakeFormData } from "@/types/intake";
 
 const familyInfoSchema = z.object({
-  isMarried: z.enum(["yes", "no"]),
+  isMarried: z.enum(["yes", "no"], { required_error: "Please select an option" }),
   spouseName: z.string().max(100).optional(),
   spouseEmail: z.string().email().max(255).optional().or(z.literal("")),
   spousePhone: z.string().max(20).optional(),
   spouseAddress: z.string().max(500).optional(),
-  hasChildren: z.enum(["yes", "no"]),
+  hasChildren: z.enum(["yes", "no"], { required_error: "Please select an option" }),
 });
 
 interface FamilyInfoStepProps {
@@ -38,12 +38,12 @@ export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) =>
   const form = useForm<z.infer<typeof familyInfoSchema>>({
     resolver: zodResolver(familyInfoSchema),
     defaultValues: {
-      isMarried: data?.isMarried ? "yes" : "no",
+      isMarried: data?.isMarried !== undefined ? (data.isMarried ? "yes" : "no") : undefined,
       spouseName: data?.spouseInfo?.name || "",
       spouseEmail: data?.spouseInfo?.email || "",
       spousePhone: data?.spouseInfo?.phone || "",
       spouseAddress: data?.spouseInfo?.address || "",
-      hasChildren: data?.hasChildren ? "yes" : "no",
+      hasChildren: data?.hasChildren !== undefined ? (data.hasChildren ? "yes" : "no") : undefined,
     },
   });
 

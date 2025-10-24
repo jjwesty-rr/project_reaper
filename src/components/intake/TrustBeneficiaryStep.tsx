@@ -16,8 +16,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { IntakeFormData } from "@/types/intake";
 
 const trustBeneficiarySchema = z.object({
-  hasTrust: z.enum(["yes", "no"]),
-  hasContestingBeneficiaries: z.enum(["yes", "no"]),
+  hasTrust: z.enum(["yes", "no"], { required_error: "Please select an option" }),
+  hasContestingBeneficiaries: z.enum(["yes", "no"], { required_error: "Please select an option" }),
   contestingBeneficiariesInfo: z.string().max(1000).optional(),
 });
 
@@ -31,8 +31,8 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack }: TrustBeneficiaryS
   const form = useForm<z.infer<typeof trustBeneficiarySchema>>({
     resolver: zodResolver(trustBeneficiarySchema),
     defaultValues: {
-      hasTrust: data?.hasTrust ? "yes" : "no",
-      hasContestingBeneficiaries: data?.hasContestingBeneficiaries ? "yes" : "no",
+      hasTrust: data?.hasTrust !== undefined ? (data.hasTrust ? "yes" : "no") : undefined,
+      hasContestingBeneficiaries: data?.hasContestingBeneficiaries !== undefined ? (data.hasContestingBeneficiaries ? "yes" : "no") : undefined,
       contestingBeneficiariesInfo: data?.contestingBeneficiariesInfo || "",
     },
   });

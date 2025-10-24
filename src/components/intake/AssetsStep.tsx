@@ -32,8 +32,8 @@ interface AssetsStepProps {
 
 export const AssetsStep = ({ data, onNext, onBack }: AssetsStepProps) => {
   const [assets, setAssets] = useState<AssetInfo[]>(data?.assets || []);
-  const [assetsInDomicileState, setAssetsInDomicileState] = useState<string>(
-    data?.assetsInDomicileState ? "yes" : "no"
+  const [assetsInDomicileState, setAssetsInDomicileState] = useState<string | undefined>(
+    data?.assetsInDomicileState !== undefined ? (data.assetsInDomicileState ? "yes" : "no") : undefined
   );
 
   const addAsset = () => {
@@ -43,9 +43,9 @@ export const AssetsStep = ({ data, onNext, onBack }: AssetsStepProps) => {
         type: "bank_accounts",
         description: "",
         estimatedValue: 0,
-        ownership: "sole",
-        hasNamedBeneficiaries: false,
-        fundedIntoTrust: false,
+        ownership: undefined as any,
+        hasNamedBeneficiaries: undefined as any,
+        fundedIntoTrust: undefined as any,
       },
     ]);
   };
