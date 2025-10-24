@@ -116,7 +116,7 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="intakes">
               <Users className="h-4 w-4 mr-2" />
-              User Intakes
+              Client Intakes
             </TabsTrigger>
             <TabsTrigger value="attorneys">
               <Briefcase className="h-4 w-4 mr-2" />
