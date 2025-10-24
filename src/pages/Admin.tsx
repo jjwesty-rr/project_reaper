@@ -29,13 +29,37 @@ export default function Admin() {
         return;
       }
 
-      // Check if user has admin or super_admin role
-      const { data: roles, error } = await supabase
+      // Use RPC calls for secure role checking
+      const { data: isSuperAdmin, error: superAdminError } = await supabase
+        .rpc('has_role', { _user_id: user.id, _role: 'super_admin' });
+
+      if (superAdminError) throw superAdminError;
+
+      if (isSuperAdmin) {
+        setUserRole('super_admin');
+        setLoading(false);
+        return;
+      }
+
+      // Check if user is any type of admin
+      const { data: isAdmin, error: adminError } = await supabase
+        .rpc('is_admin', { _user_id: user.id });
+
+      if (adminError) throw adminError;
+
+      if (isAdmin) {
+        setUserRole('admin');
+        setLoading(false);
+        return;
+      }
+
+      // Not an admin - check if this is the first user
+      const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (rolesError) throw rolesError;
 
       if (!roles || roles.length === 0) {
         // First time setup - make this user super admin
@@ -53,15 +77,9 @@ export default function Admin() {
         setNeedsSetup(true);
         toast.success('Welcome! You are now the Super Admin.');
       } else {
-        const role = roles.find(r => r.role === 'super_admin' || r.role === 'admin');
-        
-        if (!role) {
-          toast.error('Access denied. Admin privileges required.');
-          navigate('/home');
-          return;
-        }
-
-        setUserRole(role.role as 'super_admin' | 'admin');
+        toast.error('Access denied. Admin privileges required.');
+        navigate('/home');
+        return;
       }
     } catch (error) {
       console.error('Error checking access:', error);
