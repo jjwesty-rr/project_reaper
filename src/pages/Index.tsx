@@ -6,19 +6,51 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
+  const [latestSubmission, setLatestSubmission] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchLatestSubmission(session.user.id);
+      } else {
+        setLoading(false);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchLatestSubmission(session.user.id);
+      } else {
+        setLatestSubmission(null);
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchLatestSubmission = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("intake_submissions")
+        .select("id, created_at, status, referral_type")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      setLatestSubmission(data);
+    } catch (error) {
+      console.error("Error fetching submission:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
@@ -52,12 +84,33 @@ const Index = () => {
             Simplify the estate settlement process with our guided intake form. 
             We'll connect you with experienced attorneys to help you navigate this important time.
           </p>
-          <Link to="/intake">
-            <Button size="lg" className="gap-2">
-              Start Your Intake Form
-              <ArrowRight className="h-5 w-5" />
+          
+          {loading ? (
+            <Button size="lg" disabled>
+              Loading...
             </Button>
-          </Link>
+          ) : user && latestSubmission ? (
+            <div className="space-y-4">
+              <Button 
+                size="lg" 
+                className="gap-2"
+                onClick={() => navigate(`/status/${latestSubmission.id}`)}
+              >
+                View Your Submission Status
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Submitted on {new Date(latestSubmission.created_at).toLocaleDateString()}
+              </p>
+            </div>
+          ) : (
+            <Link to={user ? "/intake" : "/auth"}>
+              <Button size="lg" className="gap-2">
+                {user ? "Start Your Intake Form" : "Get Started"}
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-16">
