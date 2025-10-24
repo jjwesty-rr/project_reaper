@@ -16,6 +16,12 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { InfoIcon } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { IntakeFormData } from "@/types/intake";
 
 const representativeSchema = z.object({
@@ -99,26 +105,29 @@ export const RepresentativeStep = ({ data, onNext, onBack }: RepresentativeStepP
             )}
           />
 
-          <Card className="p-4 bg-primary/5 border-primary/20">
-            <div className="flex gap-3">
-              <InfoIcon className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium mb-1">Who Can Represent an Estate?</p>
-                <p className="text-sm text-muted-foreground">
-                  Typically, the executor named in the will, or if there's no will, a close family 
-                  member such as a spouse, adult child, or parent can petition to represent the estate. 
-                  The court ultimately approves the representative.
-                </p>
-              </div>
-            </div>
-          </Card>
-
           <FormField
             control={form.control}
             name="isExecutor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Are you intending to be the executor of the estate?</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  Are you intending to be the executor of the estate?
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p className="font-medium mb-1">Who Can Represent an Estate?</p>
+                        <p className="text-sm">
+                          Typically, the executor named in the will, or if there's no will, a close family 
+                          member such as a spouse, adult child, or parent can petition to represent the estate. 
+                          The court ultimately approves the representative.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
