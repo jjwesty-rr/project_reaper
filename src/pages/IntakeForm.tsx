@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { FormProgress } from "@/components/intake/FormProgress";
 import { ContactInfoStep } from "@/components/intake/ContactInfoStep";
@@ -21,12 +23,35 @@ const steps = [
 ];
 
 const IntakeForm = () => {
+  const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<IntakeFormData>({});
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate("/auth");
+    } else {
+      setLoading(false);
+    }
+  };
 
   const updateFormData = (data: Partial<IntakeFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, steps.length));

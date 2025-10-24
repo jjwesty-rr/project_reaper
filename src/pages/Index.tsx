@@ -1,10 +1,48 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, Shield, Clock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowRight, FileText, Shield, Clock, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      <header className="border-b bg-card/50 backdrop-blur">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Estate Settlement Portal</h2>
+          {user ? (
+            <Button
+              variant="outline"
+              onClick={() => navigate("/profile")}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate("/auth")}
+            >
+              Login / Sign Up
+            </Button>
+          )}
+        </div>
+      </header>
+
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-6">
