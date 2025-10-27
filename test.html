@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Estate Submission</title>
+</head>
+<body>
+    <h1>Test Estate Settlement Submission</h1>
+    <button onclick="testSubmission()">Create Test Submission</button>
+    <div id="result"></div>
+
+    <script>
+        async function testSubmission() {
+            const testData = {
+                contact_email: "test@example.com",
+                contact_phone: "555-1234",
+                relationship_to_deceased: "Child",
+                decedent_first_name: "John",
+                decedent_last_name: "Doe",
+                decedent_date_of_death: "2024-01-15",
+                decedent_state: "California",
+                estate_value: 50000,
+                has_will: true,
+                has_trust: false,
+                has_disputes: false
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/submissions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+                document.getElementById('result').innerHTML = 
+                    '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<p style="color: red;">Error: ' + error + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

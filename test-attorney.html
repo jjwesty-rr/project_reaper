@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Test Attorney</title>
+</head>
+<body>
+    <h1>Add Test Attorney</h1>
+    <button onclick="addAttorney()">Add Test Attorney</button>
+    <div id="result"></div>
+
+    <script>
+        async function addAttorney() {
+            const attorneyData = {
+                first_name: "Sarah",
+                last_name: "Johnson",
+                email: "sarah.johnson@lawfirm.com",
+                phone: "(555) 123-4567",
+                state: "California",
+                specialties: ["affidavit", "informal", "formal"]
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/attorneys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(attorneyData)
+                });
+
+                const result = await response.json();
+                document.getElementById('result').innerHTML = 
+                    '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<p style="color: red;">Error: ' + error + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>
