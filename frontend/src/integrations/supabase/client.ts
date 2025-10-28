@@ -1,5 +1,5 @@
 // Flask API Client - connects to your Python backend
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://estate-backend-w2i5.onrender.com';
 
 // Simple API client to replace Supabase
 export const api = {
