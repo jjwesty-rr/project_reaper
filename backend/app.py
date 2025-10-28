@@ -5,11 +5,20 @@ from datetime import datetime
 import os
 import json
 
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_bcrypt import Bcrypt
+from functools import wraps
+
 # Create Flask app
 app = Flask(__name__)
 
 # Enable CORS so your React app can talk to this Flask backend
 CORS(app)
+
+# Initialize authentication
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
 # Configure SQLite database (we'll use a simple file-based database to start)
 # Use PostgreSQL in production, SQLite locally
@@ -23,6 +32,13 @@ else:
     # Local SQLite
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///estate_settlement.db'
 
+# Session configuration for Flask-Login
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.config['SESSION_COOKIE_SECURE'] = True  # HTTPS only
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your-secret-key-change-this-later'
@@ -33,15 +49,30 @@ db = SQLAlchemy(app)
 # ============= DATABASE MODELS =============
 # These define what tables and columns your database will have
 
-class User(db.Model):
-    """User accounts - people using the system"""
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200))
+    password_hash = db.Column(db.String(128), nullable=False)
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
-    role = db.Column(db.String(20), default='user')  # 'user' or 'admin'
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    role = db.Column(db.String(20), default='client')  # 'client' or 'admin'
+    created_at = db.Column(db.DateTime, default=db.func.now())
+    
+    submissions = db.relationship('Submission', backref='user', lazy=True)
+    
+    def set_password(self, password):
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+    
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password_hash, password)
+    
+    def is_admin(self):
+        return self.role == 'admin'
+    
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 class Attorney(db.Model):
     """Attorney profiles"""
@@ -190,6 +221,7 @@ def create_submission():
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/submissions', methods=['GET'])
+@admin_required
 def get_submissions():
     """Get all submissions (for admin view)"""
     submissions = Submission.query.all()
@@ -243,6 +275,7 @@ def get_submission(submission_id):
 
 
 @app.route('/api/attorneys', methods=['GET'])
+@admin_required
 def get_attorneys():
     """Get all attorneys, optionally filtered by specialty and state"""
     specialty = request.args.get('specialty')
@@ -274,6 +307,7 @@ def get_attorneys():
 
 
 @app.route('/api/attorneys', methods=['POST'])
+@admin_required
 def create_attorney():
     """Create a new attorney (admin only for now)"""
     try:
@@ -377,6 +411,98 @@ def update_submission(submission_id):
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
     
+# Helper decorator for admin-only routes
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Authentication required'}), 401
+        if not current_user.is_admin():
+            return jsonify({'error': 'Admin access required'}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Register endpoint
+@app.route('/api/register', methods=['POST'])
+def register():
+    try:
+        data = request.json
+        
+        # Check if user already exists
+        if User.query.filter_by(email=data['email']).first():
+            return jsonify({'error': 'Email already registered'}), 400
+        
+        # Create new user
+        user = User(
+            email=data['email'],
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name', ''),
+            role=data.get('role', 'client')  # Default to 'client'
+        )
+        user.set_password(data['password'])
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        login_user(user)
+        
+        return jsonify({
+            'message': 'Registration successful',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role
+            }
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Login endpoint
+@app.route('/api/login', methods=['POST'])
+def login():
+    try:
+        data = request.json
+        user = User.query.filter_by(email=data['email']).first()
+        
+        if user and user.check_password(data['password']):
+            login_user(user)
+            return jsonify({
+                'message': 'Login successful',
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'role': user.role
+                }
+            }), 200
+        else:
+            return jsonify({'error': 'Invalid email or password'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Logout endpoint
+@app.route('/api/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({'message': 'Logout successful'}), 200
+
+# Get current user endpoint
+@app.route('/api/me', methods=['GET'])
+@login_required
+def get_current_user():
+    return jsonify({
+        'id': current_user.id,
+        'email': current_user.email,
+        'first_name': current_user.first_name,
+        'last_name': current_user.last_name,
+        'role': current_user.role
+    }), 200
+
 
     # Initialize database tables (one-time setup)
 @app.route('/api/init-db', methods=['GET'])
