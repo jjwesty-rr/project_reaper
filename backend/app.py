@@ -12,7 +12,18 @@ app = Flask(__name__)
 CORS(app)
 
 # Configure SQLite database (we'll use a simple file-based database to start)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///estate_settlement.db'
+# Use PostgreSQL in production, SQLite locally
+if os.environ.get('DATABASE_URL'):
+    # Render PostgreSQL
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    # Local SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///estate_settlement.db'
+
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your-secret-key-change-this-later'
 
@@ -365,6 +376,19 @@ def update_submission(submission_id):
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
+    
+
+    # Initialize database tables (one-time setup)
+@app.route('/api/init-db', methods=['GET'])
+def init_db():
+    try:
+        db.create_all()
+        return jsonify({'message': 'Database tables created successfully!'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+    
     
 # ============= RUN THE APP =============
 if __name__ == '__main__':
