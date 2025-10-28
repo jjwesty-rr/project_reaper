@@ -74,6 +74,18 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Helper decorator for admin-only routes
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Authentication required'}), 401
+        if not current_user.is_admin():
+            return jsonify({'error': 'Admin access required'}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 class Attorney(db.Model):
     """Attorney profiles"""
     id = db.Column(db.Integer, primary_key=True)
@@ -411,16 +423,7 @@ def update_submission(submission_id):
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
     
-# Helper decorator for admin-only routes
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            return jsonify({'error': 'Authentication required'}), 401
-        if not current_user.is_admin():
-            return jsonify({'error': 'Admin access required'}), 403
-        return f(*args, **kwargs)
-    return decorated_function
+
 
 # Register endpoint
 @app.route('/api/register', methods=['POST'])
