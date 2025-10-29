@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, Shield, Clock, CheckCircle } from "lucide-react";
+import { FileText, Shield, Clock, CheckCircle, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [lastSubmissionId, setLastSubmissionId] = useState<string | null>(null);
 
@@ -17,12 +19,35 @@ const Landing = () => {
     }
   }, []);
 
+  const handleGetStarted = () => {
+    if (user) {
+      navigate("/intake");
+    } else {
+      navigate("/auth");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      {/* Header with Login Button */}
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Estate Guru Settlement</h2>
+        {user ? (
+          <Button onClick={() => navigate("/home")}>
+            Go to Dashboard
+          </Button>
+        ) : (
+          <Button onClick={() => navigate("/auth")} variant="outline">
+            <LogIn className="mr-2 h-4 w-4" />
+            Login
+          </Button>
+        )}
+      </div>
+
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-6">
-            Estate Guru Settlement
+            Simplify Your Estate Settlement
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Simplify the estate settlement process with our guided intake form. 
@@ -30,7 +55,7 @@ const Landing = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            {hasSubmitted ? (
+            {hasSubmitted && user ? (
               <>
                 <Button 
                   size="lg" 
@@ -51,15 +76,15 @@ const Landing = () => {
             ) : (
               <Button 
                 size="lg" 
-                onClick={() => navigate("/intake")}
+                onClick={handleGetStarted}
               >
                 <FileText className="mr-2 h-5 w-5" />
-                Start Your Intake Form
+                Get Started
               </Button>
             )}
           </div>
 
-          {hasSubmitted && (
+          {hasSubmitted && user && (
             <p className="text-sm text-muted-foreground mt-4">
               Need to start a new case? Click "Start New Intake Form"
             </p>

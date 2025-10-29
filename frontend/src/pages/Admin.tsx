@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Shield, Users, Briefcase, ArrowLeft, Eye, UserPlus, Edit } from 'lucide-react';
 import { toast } from 'sonner';
+import Header from '@/components/Header';
 
 interface Submission {
   id: number;
@@ -144,20 +145,15 @@ export default function Admin() {
 
   const assignedCount = submissions.filter(s => s.attorney_id).length;
   const unassignedCount = submissions.filter(s => !s.attorney_id).length;
-
+  
+  
   return (
-    <div className="min-h-screen bg-background p-6">
+    <>
+      <Header />
+      <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/")}
-              className="mb-4"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
             <h1 className="text-4xl font-bold">Admin Portal</h1>
             <p className="text-muted-foreground mt-2">
               Manage estate settlement submissions and attorneys
@@ -451,6 +447,7 @@ export default function Admin() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+   </div>
+    </>
   );
 }
