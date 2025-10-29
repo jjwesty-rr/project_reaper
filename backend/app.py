@@ -13,7 +13,11 @@ from functools import wraps
 app = Flask(__name__)
 
 # Enable CORS so your React app can talk to this Flask backend
-CORS(app)
+CORS(app, supports_credentials=True, origins=[
+    'https://estate-settlement-frontend.onrender.com',
+    'http://localhost:8080',
+    'http://127.0.0.1:8080'
+])
 
 # Initialize authentication
 bcrypt = Bcrypt(app)
@@ -36,7 +40,7 @@ else:
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SESSION_COOKIE_SECURE'] = True  # HTTPS only
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Changed from 'Lax' to 'None' for cross-origin
 
 
 
