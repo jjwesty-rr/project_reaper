@@ -5,7 +5,7 @@ interface User {
   email: string;
   first_name: string;
   last_name: string;
-  role: 'client' | 'admin';
+  role: 'client' | 'admin' | 'super_admin';
 }
 
 interface AuthContextType {
@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const isAdmin = () => user?.role === 'admin';
+  const isAdmin = () => user?.role === 'admin' || user?.role === 'super_admin';
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin }}>
