@@ -22,15 +22,18 @@ export const api = {
   },
 
   // Get all submissions
-  async getSubmissions() {
-    const response = await fetch(`${API_URL}/api/submissions`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch submissions');
-    }
-    
-    return response.json();
-  },
+async getSubmissions() {
+  const response = await fetch(`${API_URL}/api/submissions`, {
+    credentials: 'include',  // ADD THIS LINE
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch submissions');
+  }
+  
+  return response.json();
+},
+
 
   // Get a single submission by ID
   async getSubmission(id: number) {
@@ -50,7 +53,9 @@ export const api = {
     if (filters?.state) params.append('state', filters.state);
     
     const url = `${API_URL}/api/attorneys${params.toString() ? '?' + params.toString() : ''}`;
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      credentials: 'include',
+    });
     
     if (!response.ok) {
       throw new Error('Failed to fetch attorneys');
@@ -79,12 +84,13 @@ export const api = {
   // Update a submission (assign attorney, change status, add notes)
   async updateSubmission(id: number, updates: any) {
     const response = await fetch(`${API_URL}/api/submissions/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updates),
-    });
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  credentials: 'include',  // ADD THIS LINE
+  body: JSON.stringify(updates),
+});
     
     if (!response.ok) {
       throw new Error('Failed to update submission');
