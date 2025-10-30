@@ -208,15 +208,23 @@ const handleAddAttorney = async () => {
       <Header />
       <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold">Admin Portal</h1>
-            <p className="text-muted-foreground mt-2">
-              Manage estate settlement submissions and attorneys
-            </p>
-          </div>
-          <Shield className="h-12 w-12 text-primary" />
-        </div>
+       <div className="flex items-center justify-between">
+  <div>
+    <Button 
+      variant="ghost" 
+      onClick={() => navigate("/home")}
+      className="mb-2 -ml-2"
+    >
+      <ArrowLeft className="h-4 w-4 mr-2" />
+      Back to Dashboard
+    </Button>
+    <h1 className="text-4xl font-bold">Admin Portal</h1>
+    <p className="text-muted-foreground mt-2">
+      Manage estate settlement submissions and attorneys
+    </p>
+  </div>
+  <Shield className="h-12 w-12 text-primary" />
+</div>
 
         {/* Summary Cards */}
         <div className="grid md:grid-cols-4 gap-6">
