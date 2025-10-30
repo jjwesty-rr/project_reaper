@@ -155,7 +155,7 @@ export const api = {
   },
 
   // Get current user's submissions (NEW!)
-  async getMySubmissions() {
+async getMySubmissions() {
     const response = await fetch(`${API_URL}/api/my-submissions`, {
       credentials: 'include',
     });
@@ -165,7 +165,31 @@ export const api = {
     }
     
     return response.json();
-  }, };
+  },
+
+  // User Management (Super Admin Only)
+  async getUsers() {
+    const response = await fetch(`${API_URL}/api/users`, {
+      credentials: 'include',
+    });
+    if (!response.ok) throw new Error('Failed to fetch users');
+    return response.json();
+  },
+
+  async updateUserRole(userId: number, role: string) {
+    const response = await fetch(`${API_URL}/api/users/${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ role }),
+    });
+    if (!response.ok) throw new Error('Failed to update user role');
+    return response.json();
+  },
+};
+
 
 // For backwards compatibility with code that imports "supabase"
 // We'll map it to our new API client
