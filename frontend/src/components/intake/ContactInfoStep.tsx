@@ -23,9 +23,10 @@ const contactInfoSchema = z.object({
 interface ContactInfoStepProps {
   data?: ContactInfo;
   onNext: (data: Partial<ContactInfo>) => void;
+  onSkipToReview?: () => void;
 }
 
-export const ContactInfoStep = ({ data, onNext }: ContactInfoStepProps) => {
+export const ContactInfoStep = ({ data, onNext, onSkipToReview }: ContactInfoStepProps) => {
   const form = useForm<z.infer<typeof contactInfoSchema>>({
     resolver: zodResolver(contactInfoSchema),
     defaultValues: {
@@ -133,8 +134,17 @@ export const ContactInfoStep = ({ data, onNext }: ContactInfoStepProps) => {
             )}
           />
 
-          <div className="flex justify-end pt-4">
-            <Button type="submit" size="lg">
+          <div className="flex justify-between pt-4">
+            {onSkipToReview && (
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={onSkipToReview}
+              >
+                Skip to Review
+              </Button>
+            )}
+            <Button type="submit" size="lg" className={onSkipToReview ? "" : "ml-auto"}>
               Continue
             </Button>
           </div>

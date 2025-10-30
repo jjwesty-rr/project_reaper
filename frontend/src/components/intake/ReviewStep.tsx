@@ -72,27 +72,39 @@ export const ReviewStep = ({ data, onBack, submissionId }: ReviewStepProps) => {
 const handleSubmit = async () => {
   setSubmitting(true);
   try {
-    // Prepare complete form data (includes everything from all steps)
-    const completeFormData = {
-      // Contact info
+    // Flat fields for backend database columns
+    const flatData = {
       contact_email: data.contactInfo?.email || '',
       contact_phone: data.contactInfo?.phone || '',
       relationship_to_deceased: data.contactInfo?.relationshipToDecedent || '',
-      
-      // Decedent info
       decedent_first_name: data.decedentInfo?.name?.split(' ')[0] || '',
       decedent_last_name: data.decedentInfo?.name?.split(' ').slice(1).join(' ') || '',
       decedent_date_of_death: data.decedentInfo?.dateOfDeath || '',
       decedent_state: data.decedentInfo?.domicileState || '',
-      
-      // Estate info
       estate_value: data.totalNetAssetValue || 0,
       has_will: true,
       has_trust: data.hasTrust || false,
       has_disputes: data.hasContestingBeneficiaries || false,
-      
-      // Complete form data for editing later
-      ...data
+    };
+
+    // Complete nested form data for form_data column (for editing)
+    const completeFormData = {
+      ...flatData,
+      // Keep ALL nested structure
+      contactInfo: data.contactInfo,
+      decedentInfo: data.decedentInfo,
+      isMarried: data.isMarried,
+      spouseInfo: data.spouseInfo,
+      hasChildren: data.hasChildren,
+      children: data.children,
+      representativeInfo: data.representativeInfo,
+      hasTrust: data.hasTrust,
+      hasContestingBeneficiaries: data.hasContestingBeneficiaries,
+      contestingBeneficiariesInfo: data.contestingBeneficiariesInfo,
+      assets: data.assets,
+      totalNetAssetValue: data.totalNetAssetValue,
+      assetsInDomicileState: data.assetsInDomicileState,
+      referralType: referralType,
     };
 
     let response;

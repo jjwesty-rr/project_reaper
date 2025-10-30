@@ -207,6 +207,7 @@ def create_submission():
         
         # Create new submission
         submission = Submission(
+            user_id=current_user.id if current_user.is_authenticated else None,
             contact_email=data.get('contact_email'),
             contact_phone=data.get('contact_phone'),
             relationship_to_deceased=data.get('relationship_to_deceased'),
@@ -256,9 +257,33 @@ def get_submissions():
             'estate_value': sub.estate_value,
             'referral_type': sub.referral_type,
             'status': sub.status,
-            'attorney_id': sub.attorney_id,  # ADD THIS LINE
-            'notes': sub.notes,  # ADD THIS LINE
+            'attorney_id': sub.attorney_id,
+            'notes': sub.notes,
             'created_at': sub.created_at.isoformat()
+        })
+    
+    return jsonify(result)
+
+
+@app.route('/api/my-submissions', methods=['GET'])
+@login_required
+def get_my_submissions():
+    """Get submissions for the current logged-in user"""
+    submissions = Submission.query.filter_by(user_id=current_user.id).all()
+    
+    result = []
+    for sub in submissions:
+        result.append({
+            'id': sub.id,
+            'contact_email': sub.contact_email,
+            'decedent_name': f"{sub.decedent_first_name} {sub.decedent_last_name}",
+            'decedent_state': sub.decedent_state,
+            'estate_value': sub.estate_value,
+            'referral_type': sub.referral_type,
+            'status': sub.status,
+            'attorney_id': sub.attorney_id,
+            'created_at': sub.created_at.isoformat(),
+            'updated_at': sub.updated_at.isoformat()
         })
     
     return jsonify(result)

@@ -47,9 +47,10 @@ interface DecedentInfoStepProps {
   data?: DecedentInfo;
   onNext: (data: Partial<DecedentInfo>) => void;
   onBack: () => void;
+  onSkipToReview?: () => void;
 }
 
-export const DecedentInfoStep = ({ data, onNext, onBack }: DecedentInfoStepProps) => {
+export const DecedentInfoStep = ({ data, onNext, onBack, onSkipToReview }: DecedentInfoStepProps) => {
   const form = useForm<z.infer<typeof decedentInfoSchema>>({
     resolver: zodResolver(decedentInfoSchema),
     defaultValues: {
@@ -211,9 +212,20 @@ export const DecedentInfoStep = ({ data, onNext, onBack }: DecedentInfoStepProps
             <Button type="button" variant="outline" onClick={onBack}>
               Back
             </Button>
-            <Button type="submit" size="lg">
-              Continue
-            </Button>
+            <div className="flex gap-2">
+              {onSkipToReview && (
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={onSkipToReview}
+                >
+                  Skip to Review
+                </Button>
+              )}
+              <Button type="submit" size="lg">
+                Continue
+              </Button>
+            </div>
           </div>
         </form>
       </Form>

@@ -10,6 +10,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // ADD THIS LINE
       body: JSON.stringify(data),
     });
     
@@ -91,7 +92,80 @@ export const api = {
     
     return response.json();
   },
-  };
+ // Authentication methods
+  async register(data: { email: string; password: string; first_name?: string; last_name?: string }) {
+    const response = await fetch(`${API_URL}/api/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Important for sessions
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Registration failed');
+    }
+    
+    return response.json();
+  },
+
+  async login(email: string, password: string) {
+    const response = await fetch(`${API_URL}/api/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Important for sessions
+      body: JSON.stringify({ email, password }),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Login failed');
+    }
+    
+    return response.json();
+  },
+
+  async logout() {
+    const response = await fetch(`${API_URL}/api/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      throw new Error('Logout failed');
+    }
+    
+    return response.json();
+  },
+
+  async getCurrentUser() {
+    const response = await fetch(`${API_URL}/api/me`, {
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    return response.json();
+  },
+
+  // Get current user's submissions (NEW!)
+  async getMySubmissions() {
+    const response = await fetch(`${API_URL}/api/my-submissions`, {
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch your submissions');
+    }
+    
+    return response.json();
+  }, };
 
 // For backwards compatibility with code that imports "supabase"
 // We'll map it to our new API client

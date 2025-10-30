@@ -25,9 +25,10 @@ interface TrustBeneficiaryStepProps {
   data?: IntakeFormData;
   onNext: (data: Partial<IntakeFormData>) => void;
   onBack: () => void;
+  onSkipToReview?: () => void;
 }
 
-export const TrustBeneficiaryStep = ({ data, onNext, onBack }: TrustBeneficiaryStepProps) => {
+export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: TrustBeneficiaryStepProps) => {
   const form = useForm<z.infer<typeof trustBeneficiarySchema>>({
     resolver: zodResolver(trustBeneficiarySchema),
     defaultValues: {
@@ -144,13 +145,24 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack }: TrustBeneficiaryS
             />
           )}
 
-          <div className="flex justify-between pt-4">
+         <div className="flex justify-between pt-4">
             <Button type="button" variant="outline" onClick={onBack}>
               Back
             </Button>
-            <Button type="submit" size="lg">
-              Continue
-            </Button>
+            <div className="flex gap-2">
+              {onSkipToReview && (
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={onSkipToReview}
+                >
+                  Skip to Review
+                </Button>
+              )}
+              <Button type="submit" size="lg">
+                Continue
+              </Button>
+            </div>
           </div>
         </form>
       </Form>

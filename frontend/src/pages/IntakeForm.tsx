@@ -56,14 +56,14 @@ const IntakeForm = () => {
       } else {
         // Old format - flat structure, needs transformation
 const transformedData: IntakeFormData = {
-  contactInfo: {
-    email: submission.form_data.contact_email || submission.contact_email,
-    phone: submission.form_data.contact_phone || submission.contact_phone,
-    name: submission.form_data.contact_name || '',
-    relationshipToDecedent: submission.form_data.relationship_to_deceased || submission.relationship_to_deceased,
-    address: "",
-    isExecutor: false
-  },
+ contactInfo: {
+  email: submission.form_data.contact_email || submission.contact_email,
+  phone: submission.form_data.contact_phone || submission.contact_phone,
+  name: submission.form_data.contact_name || '',
+  relationshipToDecedent: submission.form_data.relationship_to_deceased || submission.relationship_to_deceased || '',
+  address: submission.form_data.contact_address || '',
+  isExecutor: submission.form_data.is_executor || false
+},
   decedentInfo: {
     name: `${submission.decedent_first_name || ''} ${submission.decedent_last_name || ''}`.trim(),
     dateOfDeath: submission.form_data.decedent_date_of_death || submission.decedent_date_of_death,
@@ -99,7 +99,13 @@ setFormData(transformedData);
 };
 
   const updateFormData = (data: Partial<IntakeFormData>) => {
-    setFormData((prev) => ({ ...prev, ...data }));
+    console.log("=== UPDATING FORM DATA ===");
+    console.log("New data:", data);
+    setFormData((prev) => {
+      const updated = { ...prev, ...data };
+      console.log("Updated formData:", updated);
+      return updated;
+    });
   };
 
   const handleNext = () => {
@@ -109,6 +115,11 @@ setFormData(transformedData);
   const handleBack = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
+
+  const handleSkipToReview = () => {
+    setCurrentStep(7);
+  };
+
 
   if (loading) {
     return (
@@ -128,9 +139,10 @@ setFormData(transformedData);
               updateFormData({ contactInfo: data as any });
               handleNext();
             }}
+            onSkipToReview={submissionId ? handleSkipToReview : undefined}
           />
         );
-      case 2:
+     case 2:
         return (
           <DecedentInfoStep
             data={formData.decedentInfo}
@@ -139,6 +151,7 @@ setFormData(transformedData);
               handleNext();
             }}
             onBack={handleBack}
+            onSkipToReview={submissionId ? handleSkipToReview : undefined}
           />
         );
       case 3:
@@ -150,6 +163,7 @@ setFormData(transformedData);
               handleNext();
             }}
             onBack={handleBack}
+            onSkipToReview={submissionId ? handleSkipToReview : undefined}
           />
         );
       case 4:
@@ -161,6 +175,7 @@ setFormData(transformedData);
               handleNext();
             }}
             onBack={handleBack}
+            onSkipToReview={submissionId ? handleSkipToReview : undefined}
           />
         );
       case 5:
@@ -172,6 +187,7 @@ setFormData(transformedData);
               handleNext();
             }}
             onBack={handleBack}
+            onSkipToReview={submissionId ? handleSkipToReview : undefined}
           />
         );
       case 6:
@@ -183,6 +199,7 @@ setFormData(transformedData);
               handleNext();
             }}
             onBack={handleBack}
+            onSkipToReview={submissionId ? handleSkipToReview : undefined}
           />
         );
 case 7:

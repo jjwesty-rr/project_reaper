@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, Clock, FileText, ArrowLeft, Home, Edit } from "lucide-react";
+import { CheckCircle2, Clock, FileText, ArrowLeft, Edit, Mail } from "lucide-react";
+import Header from "@/components/Header";
 
 const Status = () => {
   const { id } = useParams();
@@ -98,136 +99,144 @@ const Status = () => {
   const nextSteps = getNextSteps(submission.referral_type);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 p-4 md:p-8">
-      <div className="container mx-auto max-w-4xl">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
-        </Button>
+    <>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 p-4 md:p-8">
+        <div className="container mx-auto max-w-4xl">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/home")}
+            className="mb-6"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Return to Dashboard
+          </Button>
 
-        <div className="space-y-6">
-          <Card className="border-primary/20 bg-gradient-to-br from-card to-primary/5">
-            <CardHeader className="text-center pb-4">
-              <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <CheckCircle2 className="h-8 w-8 text-primary" />
-              </div>
-              <CardTitle className="text-3xl">Submission Received!</CardTitle>
-              <CardDescription className="text-base">
-                Your estate settlement intake form has been successfully submitted
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Submission Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Submission ID</p>
-                  <p className="font-mono text-sm">#{submission.id}</p>
+          <div className="space-y-6">
+            <Card className="border-primary/20 bg-gradient-to-br from-card to-primary/5">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CheckCircle2 className="h-8 w-8 text-primary" />
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Submitted On</p>
-                  <p className="text-sm">{new Date(submission.created_at).toLocaleDateString()}</p>
+                <CardTitle className="text-3xl">Submission Received!</CardTitle>
+                <CardDescription className="text-base">
+                  Your estate settlement intake form has been successfully submitted
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Submission Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Submission ID</p>
+                    <p className="font-mono text-sm">#{submission.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Submitted On</p>
+                    <p className="text-sm">{new Date(submission.created_at).toLocaleDateString()}</p>
+                  </div>
                 </div>
-              </div>
 
-              <Separator />
+                <Separator />
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Recommended Path</p>
-                <Badge variant="outline" className="text-base px-4 py-1">
-                  {getReferralTitle(submission.referral_type)}
-                </Badge>
-              </div>
-
-              {submission.estate_value && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Total Estate Value</p>
-                  <p className="text-lg font-semibold">
-                    ${submission.estate_value.toLocaleString()}
-                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">Recommended Path</p>
+                  <Badge variant="outline" className="text-base px-4 py-1">
+                    {getReferralTitle(submission.referral_type)}
+                  </Badge>
                 </div>
-              )}
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Status</p>
-                <Badge className="bg-blue-500">
-                  <Clock className="mr-1 h-3 w-3" />
-                  {submission.status}
-                </Badge>
-              </div>
+                {submission.estate_value && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Total Estate Value</p>
+                    <p className="text-lg font-semibold">
+                      ${submission.estate_value.toLocaleString()}
+                    </p>
+                  </div>
+                )}
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Decedent</p>
-                <p className="font-medium">{submission.decedent_name}</p>
-                <p className="text-sm text-muted-foreground">{submission.decedent_state}</p>
-              </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Status</p>
+                  <Badge className="bg-blue-500">
+                    <Clock className="mr-1 h-3 w-3" />
+                    {submission.status}
+                  </Badge>
+                </div>
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Contact Email</p>
-                <p className="text-sm">{submission.contact_email}</p>
-              </div>
-            </CardContent>
-          </Card>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Decedent</p>
+                  <p className="font-medium">{submission.decedent_name}</p>
+                  <p className="text-sm text-muted-foreground">{submission.decedent_state}</p>
+                </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Next Steps</CardTitle>
-              <CardDescription>
-                Here's what happens next in your estate settlement process
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ol className="space-y-4">
-                {nextSteps.map((step, index) => (
-                  <li key={index} className="flex gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                      {index + 1}
-                    </div>
-                    <p className="pt-1">{step}</p>
-                  </li>
-                ))}
-              </ol>
-            </CardContent>
-          </Card>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Contact Email</p>
+                  <p className="text-sm">{submission.contact_email}</p>
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
-  <CardHeader>
-    <CardTitle>Need Help?</CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-4">
-    <p className="text-muted-foreground">
-      If you have any questions about your submission or need to provide additional information,
-      please don't hesitate to contact us.
-    </p>
-    <div className="flex gap-4">
-  <Button 
-    variant="outline"
-    onClick={() => navigate(`/intake?edit=${submission.id}`)}
-  >
-    <Edit className="mr-2 h-4 w-4" />
-    Edit Submission
-  </Button>
-  <Button onClick={() => navigate("/")}>
-    <Home className="mr-2 h-4 w-4" />
-    Return Home
-  </Button>
-</div>
-  </CardContent>
-</Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Next Steps</CardTitle>
+                <CardDescription>
+                  Here's what happens next in your estate settlement process
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ol className="space-y-4">
+                  {nextSteps.map((step, index) => (
+                    <li key={index} className="flex gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                        {index + 1}
+                      </div>
+                      <p className="pt-1">{step}</p>
+                    </li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Need Help?</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  If you have any questions about your submission or need to provide additional information,
+                  please don't hesitate to contact us.
+                </p>
+                <div className="flex gap-4">
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate(`/intake?edit=${submission.id}`)}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Submission
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    asChild
+                  >
+                    <a href="mailto:support@estateguru.com?subject=Support Request - Submission #${submission.id}">
+                      <Mail className="mr-2 h-4 w-4" />
+                      Contact Support
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

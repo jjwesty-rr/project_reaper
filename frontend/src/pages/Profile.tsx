@@ -2,20 +2,22 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="container mx-auto max-w-4xl">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/home")}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
+          Return to Dashboard
         </Button>
 
         <Card>
@@ -25,14 +27,24 @@ const Profile = () => {
               <CardTitle>User Profile</CardTitle>
             </div>
             <CardDescription>
-              User profiles will be available once authentication is implemented.
+              Manage your account settings and preferences
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              This page will show user information, submission history, and account settings
-              once we add Flask authentication.
-            </p>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Name</p>
+                <p className="font-medium">{user?.first_name} {user?.last_name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Email</p>
+                <p className="font-medium">{user?.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Account Type</p>
+                <p className="font-medium capitalize">{user?.role}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

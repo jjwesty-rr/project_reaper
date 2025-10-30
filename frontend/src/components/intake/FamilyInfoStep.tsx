@@ -30,9 +30,10 @@ interface FamilyInfoStepProps {
   data?: IntakeFormData;
   onNext: (data: Partial<IntakeFormData>) => void;
   onBack: () => void;
+  onSkipToReview?: () => void;
 }
 
-export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) => {
+export const FamilyInfoStep = ({ data, onNext, onBack, onSkipToReview }: FamilyInfoStepProps) => {
   const [children, setChildren] = useState(data?.children || []);
 
   const form = useForm<z.infer<typeof familyInfoSchema>>({
@@ -46,6 +47,13 @@ export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) =>
       hasChildren: data?.hasChildren !== undefined ? (data.hasChildren ? "yes" : "no") : undefined,
     },
   });
+
+   // ADD THIS DEBUG CODE:
+  console.log("=== FAMILY FORM INIT ===");
+  console.log("Incoming data:", data);
+  console.log("Form default values:", form.formState.defaultValues);
+  console.log("isMarried default:", data?.isMarried !== undefined ? (data.isMarried ? "yes" : "no") : undefined);
+  console.log("hasChildren default:", data?.hasChildren !== undefined ? (data.hasChildren ? "yes" : "no") : undefined);
 
   const watchIsMarried = form.watch("isMarried");
   const watchHasChildren = form.watch("hasChildren");
@@ -77,7 +85,12 @@ export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) =>
     setChildren(updated);
   };
 
-  const onSubmit = (values: z.infer<typeof familyInfoSchema>) => {
+   const onSubmit = (values: z.infer<typeof familyInfoSchema>) => {
+    console.log("=== FAMILY INFO SUBMIT ===");
+    console.log("Form values:", values);
+    console.log("isMarried:", values.isMarried);
+    console.log("hasChildren:", values.hasChildren);
+    console.log("Children array:", children);
     const formData: Partial<IntakeFormData> = {
       isMarried: values.isMarried === "yes",
       hasChildren: values.hasChildren === "yes",
@@ -120,7 +133,10 @@ export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) =>
                 <FormLabel>Was the decedent married at the time of death?</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      console.log("isMarried radio changed to:", value);
+                      field.onChange(value);
+                    }}
                     defaultValue={field.value}
                     className="flex gap-4"
                   >
@@ -218,7 +234,10 @@ export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) =>
                 <FormLabel>Did the decedent have children?</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      console.log("hasChildren radio changed to:", value);
+                      field.onChange(value);
+                    }}
                     defaultValue={field.value}
                     className="flex gap-4"
                   >
@@ -298,9 +317,20 @@ export const FamilyInfoStep = ({ data, onNext, onBack }: FamilyInfoStepProps) =>
             <Button type="button" variant="outline" onClick={onBack}>
               Back
             </Button>
-            <Button type="submit" size="lg">
-              Continue
-            </Button>
+            <div className="flex gap-2">
+              {onSkipToReview && (
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={onSkipToReview}
+                >
+                  Skip to Review
+                </Button>
+              )}
+              <Button type="submit" size="lg">
+                Continue
+              </Button>
+            </div>
           </div>
         </form>
       </Form>

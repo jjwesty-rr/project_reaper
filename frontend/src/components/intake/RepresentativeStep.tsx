@@ -38,13 +38,14 @@ interface RepresentativeStepProps {
   data?: IntakeFormData;
   onNext: (data: Partial<IntakeFormData>) => void;
   onBack: () => void;
+  onSkipToReview?: () => void;
 }
 
-export const RepresentativeStep = ({ data, onNext, onBack }: RepresentativeStepProps) => {
+export const RepresentativeStep = ({ data, onNext, onBack, onSkipToReview }: RepresentativeStepProps) => {
   const form = useForm<z.infer<typeof representativeSchema>>({
     resolver: zodResolver(representativeSchema),
     defaultValues: {
-      relationshipToDecedent: data?.contactInfo?.relationshipToDecedent || "",
+      relationshipToDecedent: data?.contactInfo?.relationshipToDecedent || (data as any)?.relationship_to_deceased || "",
       isExecutor: data?.contactInfo?.isExecutor !== undefined ? (data.contactInfo.isExecutor ? "yes" : "no") : undefined,
       representativeName: data?.representativeInfo?.name || "",
       representativeEmail: data?.representativeInfo?.email || "",
@@ -260,9 +261,20 @@ export const RepresentativeStep = ({ data, onNext, onBack }: RepresentativeStepP
             <Button type="button" variant="outline" onClick={onBack}>
               Back
             </Button>
-            <Button type="submit" size="lg">
-              Continue
-            </Button>
+            <div className="flex gap-2">
+              {onSkipToReview && (
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={onSkipToReview}
+                >
+                  Skip to Review
+                </Button>
+              )}
+              <Button type="submit" size="lg">
+                Continue
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
