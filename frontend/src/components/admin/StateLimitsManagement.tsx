@@ -1,24 +1,20 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus, DollarSign } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { z } from 'zod';
-
-const stateLimitSchema = z.object({
-  state: z.string().trim().min(2, "State name too short").max(50, "State name too long"),
-  limit_amount: z.number().positive("Amount must be positive").max(100000000, "Amount too large"),
-});
 
 interface StateLimit {
-  id: string;
+  id: number;
   state: string;
   limit_amount: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export function StateLimitsManagement() {
@@ -28,6 +24,7 @@ export function StateLimitsManagement() {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [formState, setFormState] = useState('');
   const [formAmount, setFormAmount] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchLimits();
@@ -35,13 +32,8 @@ export function StateLimitsManagement() {
 
   const fetchLimits = async () => {
     try {
-      const { data, error } = await supabase
-        .from('state_estate_limits')
-        .select('*')
-        .order('state');
-
-      if (error) throw error;
-      setLimits(data || []);
+      const data = await api.getStateLimits();
+      setLimits(data);
     } catch (error) {
       console.error('Error fetching limits:', error);
       toast.error('Failed to load state limits');
@@ -68,39 +60,25 @@ export function StateLimitsManagement() {
       return;
     }
 
+    const amount = parseFloat(formAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Please enter a valid positive amount');
+      return;
+    }
+
+    setSaving(true);
     try {
-      const amount = parseFloat(formAmount);
-      if (isNaN(amount)) {
-        toast.error('Please enter a valid amount');
-        return;
-      }
-
-      // Validate input
-      const validationResult = stateLimitSchema.safeParse({ 
-        state: formState, 
-        limit_amount: amount 
-      });
-      
-      if (!validationResult.success) {
-        const errors = validationResult.error.errors.map(e => e.message).join(", ");
-        toast.error(errors);
-        return;
-      }
-
       if (editingLimit) {
-        const { error } = await supabase
-          .from('state_estate_limits')
-          .update({ state: formState, limit_amount: amount })
-          .eq('id', editingLimit.id);
-
-        if (error) throw error;
+        await api.updateStateLimit(editingLimit.id, {
+          state: formState,
+          limit_amount: amount
+        });
         toast.success('State limit updated');
       } else {
-        const { error } = await supabase
-          .from('state_estate_limits')
-          .insert({ state: formState, limit_amount: amount });
-
-        if (error) throw error;
+        await api.createStateLimit({
+          state: formState,
+          limit_amount: amount
+        });
         toast.success('State limit added');
       }
 
@@ -109,19 +87,16 @@ export function StateLimitsManagement() {
     } catch (error: any) {
       console.error('Error saving limit:', error);
       toast.error(error.message || 'Failed to save state limit');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this state limit?')) return;
 
     try {
-      const { error } = await supabase
-        .from('state_estate_limits')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await api.deleteStateLimit(id);
       toast.success('State limit deleted');
       fetchLimits();
     } catch (error) {
@@ -138,7 +113,11 @@ export function StateLimitsManagement() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <DollarSign className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
@@ -146,11 +125,14 @@ export function StateLimitsManagement() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>State Estate Limits</CardTitle>
-              <CardDescription>
-                Manage small estate affidavit limits by state
-              </CardDescription>
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              <div>
+                <CardTitle>State Estate Limits</CardTitle>
+                <CardDescription>
+                  Manage small estate affidavit limits by state
+                </CardDescription>
+              </div>
             </div>
             <Button onClick={handleAddNew}>
               <Plus className="h-4 w-4 mr-2" />
@@ -159,39 +141,49 @@ export function StateLimitsManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>State</TableHead>
-                <TableHead>Limit Amount</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {limits.map((limit) => (
-                <TableRow key={limit.id}>
-                  <TableCell className="font-medium">{limit.state}</TableCell>
-                  <TableCell>${limit.limit_amount.toLocaleString()}</TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(limit)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(limit.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+          {limits.length === 0 ? (
+            <div className="text-center py-12">
+              <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground mb-4">No state limits configured yet</p>
+              <p className="text-sm text-muted-foreground">
+                Add state limits to customize the settlement referral logic
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>State</TableHead>
+                  <TableHead>Limit Amount</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {limits.map((limit) => (
+                  <TableRow key={limit.id}>
+                    <TableCell className="font-medium">{limit.state}</TableCell>
+                    <TableCell>${limit.limit_amount.toLocaleString()}</TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(limit)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(limit.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -205,9 +197,9 @@ export function StateLimitsManagement() {
               Set the small estate affidavit limit for this state
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="state">State Name</Label>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="state">State Name *</Label>
               <Input
                 id="state"
                 value={formState}
@@ -215,8 +207,8 @@ export function StateLimitsManagement() {
                 placeholder="e.g., California"
               />
             </div>
-            <div>
-              <Label htmlFor="amount">Limit Amount ($)</Label>
+            <div className="space-y-2">
+              <Label htmlFor="amount">Limit Amount ($) *</Label>
               <Input
                 id="amount"
                 type="number"
@@ -224,11 +216,18 @@ export function StateLimitsManagement() {
                 onChange={(e) => setFormAmount(e.target.value)}
                 placeholder="e.g., 184500"
               />
+              <p className="text-xs text-muted-foreground">
+                Estates below this amount qualify for small estate affidavit
+              </p>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleSave}>Save</Button>
+            <Button variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : 'Save'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

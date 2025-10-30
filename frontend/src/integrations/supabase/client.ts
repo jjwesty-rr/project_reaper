@@ -195,6 +195,56 @@ async getMySubmissions() {
     if (!response.ok) throw new Error('Failed to update user role');
     return response.json();
   },
+// State Limits Management (Admin Only)
+async getStateLimits() {
+  const response = await fetch(`${API_URL}/api/state-limits`, {
+    credentials: 'include',
+  });
+  if (!response.ok) throw new Error('Failed to fetch state limits');
+  return response.json();
+},
+
+async createStateLimit(data: { state: string; limit_amount: number }) {
+  const response = await fetch(`${API_URL}/api/state-limits`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create state limit');
+  }
+  return response.json();
+},
+
+async updateStateLimit(id: number, data: { state?: string; limit_amount?: number }) {
+  const response = await fetch(`${API_URL}/api/state-limits/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to update state limit');
+  }
+  return response.json();
+},
+
+async deleteStateLimit(id: number) {
+  const response = await fetch(`${API_URL}/api/state-limits/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!response.ok) throw new Error('Failed to delete state limit');
+  return response.json();
+},
+
 };
 
 

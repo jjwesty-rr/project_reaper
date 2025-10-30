@@ -11,10 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Shield, Users, Briefcase, ArrowLeft, Eye, UserPlus, Edit } from 'lucide-react';
+import { Shield, Users, Briefcase, ArrowLeft, Eye, UserPlus, Edit, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
-import { AdminManagement } from '@/components/admin/AdminManagement';  // ADD THIS LINE
+import { AdminManagement } from '@/components/admin/AdminManagement';  
+import { StateLimitsManagement } from '@/components/admin/StateLimitsManagement';
+
 
 
 interface Submission {
@@ -255,7 +257,7 @@ const handleAddAttorney = async () => {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="submissions">
               <Users className="h-4 w-4 mr-2" />
               Client Submissions
@@ -363,6 +365,17 @@ const handleAddAttorney = async () => {
             </Card>
           </TabsContent>
 
+ {/* State Limit Tab */}
+          <TabsTrigger value="users">
+  <Shield className="h-4 w-4 mr-2" />
+  User Management
+</TabsTrigger>
+<TabsTrigger value="state-limits">
+  <DollarSign className="h-4 w-4 mr-2" />
+  State Limits
+</TabsTrigger>
+
+
           {/* Attorneys Tab */}
           <TabsContent value="attorneys">
             <Card>
@@ -433,12 +446,17 @@ const handleAddAttorney = async () => {
           </TabsContent>
         
 
-        {/* User Management Tab */}
+{/* User Management Tab */}
 <TabsContent value="users">
   <AdminManagement />
 </TabsContent>
 
-        </Tabs>
+{/* State Limits Tab - ADD THIS */}
+<TabsContent value="state-limits">
+  <StateLimitsManagement />
+</TabsContent>
+
+</Tabs>
       </div>
 
       
