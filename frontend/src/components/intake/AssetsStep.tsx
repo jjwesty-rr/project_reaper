@@ -28,9 +28,10 @@ interface AssetsStepProps {
   data?: IntakeFormData;
   onNext: (data: Partial<IntakeFormData>) => void;
   onBack: () => void;
+  onSkipToReview?: () => void;
 }
 
-export const AssetsStep = ({ data, onNext, onBack }: AssetsStepProps) => {
+export const AssetsStep = ({ data, onNext, onBack, onSkipToReview }: AssetsStepProps) => {
   const [assets, setAssets] = useState<AssetInfo[]>(data?.assets || []);
   const [assetsInDomicileState, setAssetsInDomicileState] = useState<string | undefined>(
     data?.assetsInDomicileState !== undefined ? (data.assetsInDomicileState ? "yes" : "no") : undefined
@@ -275,9 +276,20 @@ export const AssetsStep = ({ data, onNext, onBack }: AssetsStepProps) => {
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button onClick={handleSubmit} size="lg" disabled={assets.length === 0}>
-          Continue to Review
-        </Button>
+        <div className="flex gap-2">
+          {onSkipToReview && (
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={onSkipToReview}
+            >
+              Skip to Review
+            </Button>
+          )}
+          <Button onClick={handleSubmit} size="lg" disabled={assets.length === 0}>
+            Continue to Review
+          </Button>
+        </div>
       </div>
     </div>
   );

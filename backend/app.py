@@ -75,7 +75,10 @@ class User(UserMixin, db.Model):
         return bcrypt.check_password_hash(self.password_hash, password)
     
     def is_admin(self):
-        return self.role == 'admin'
+        return self.role in ['admin', 'super_admin']  # Both admin and super_admin have admin access
+    
+    def is_super_admin(self):
+        return self.role == 'super_admin'
     
 
 @login_manager.user_loader
@@ -92,6 +95,18 @@ def admin_required(f):
             return jsonify({'error': 'Admin access required'}), 403
         return f(*args, **kwargs)
     return decorated_function
+
+# Helper decorator for super-admin-only routes
+def super_admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Authentication required'}), 401
+        if not current_user.is_super_admin():
+            return jsonify({'error': 'Super admin access required'}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 
 class Attorney(db.Model):
@@ -539,6 +554,33 @@ def get_current_user():
         'role': current_user.role
     }), 200
 
+# TEMPORARY: One-time endpoint to promote yourself to super admin
+@app.route('/api/make-me-super-admin', methods=['POST'])
+@login_required
+def make_super_admin():
+    """One-time use: Promote current user to super admin"""
+    try:
+        # Only allow if there are no super admins yet
+        existing_super_admin = User.query.filter_by(role='super_admin').first()
+        
+        if existing_super_admin:
+            return jsonify({'error': 'A super admin already exists'}), 403
+        
+        current_user.role = 'super_admin'
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'You are now a super admin!',
+            'user': {
+                'id': current_user.id,
+                'email': current_user.email,
+                'role': current_user.role
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
     # Initialize database tables (one-time setup)
 @app.route('/api/init-db', methods=['GET'])
@@ -550,7 +592,63 @@ def init_db():
         return jsonify({'error': str(e)}), 500
     
 
+      # User Management (Super Admin Only)
+@app.route('/api/users', methods=['GET'])
+@super_admin_required
+def get_users():
+    """Get all users for user management (super admin only)"""
+    users = User.query.order_by(User.created_at.desc()).all()
     
+    result = []
+    for user in users:
+        result.append({
+            'id': user.id,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'created_at': user.created_at.isoformat()
+        })
+    
+    return jsonify(result)
+
+
+@app.route('/api/users/<int:user_id>', methods=['PATCH'])
+@super_admin_required
+def update_user_role(user_id):
+    """Update a user's role (super admin only)"""
+    try:
+        user = User.query.get_or_404(user_id)
+        data = request.get_json()
+        
+        # Validate role
+        valid_roles = ['client', 'admin', 'super_admin']
+        new_role = data.get('role')
+        
+        if new_role not in valid_roles:
+            return jsonify({'error': f'Invalid role. Must be one of: {valid_roles}'}), 400
+        
+        # Prevent super admin from demoting themselves
+        if user_id == current_user.id and new_role != 'super_admin':
+            return jsonify({'error': 'Cannot change your own super admin role'}), 403
+        
+        user.role = new_role
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'User role updated successfully',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500  
     
 # ============= RUN THE APP =============
 if __name__ == '__main__':
@@ -561,3 +659,4 @@ if __name__ == '__main__':
     
     # Run the Flask development server
     app.run(debug=True, port=5000)
+
