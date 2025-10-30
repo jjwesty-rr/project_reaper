@@ -121,6 +121,15 @@ class Attorney(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class StateLimit(db.Model):
+    """State estate limit thresholds for determining referral type"""
+    id = db.Column(db.Integer, primary_key=True)
+    state = db.Column(db.String(50), unique=True, nullable=False)
+    limit_amount = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class Submission(db.Model):
     """Estate settlement submissions from users"""
     id = db.Column(db.Integer, primary_key=True)
@@ -162,16 +171,8 @@ class Submission(db.Model):
 def determine_referral_type(estate_value, has_trust, has_disputes, state):
     """
     Logic to determine which type of estate settlement process is needed
-    This is simplified - you'll customize based on your state rules
+    Reads state limits from database
     """
-    # State-specific small estate limits (simplified examples)
-    small_estate_limits = {
-        'California': 184500,
-        'Texas': 75000,
-        'Florida': 75000,
-        'New York': 50000,
-    }
-    
     # If there's a trust, use trust administration
     if has_trust:
         return 'trust'
@@ -180,8 +181,10 @@ def determine_referral_type(estate_value, has_trust, has_disputes, state):
     if has_disputes:
         return 'formal'
     
-    # Check if estate is small enough for affidavit
-    limit = small_estate_limits.get(state, 50000)  # default to 50k if state not listed
+    # Check if estate is small enough for affidavit based on state limit from database
+    state_limit = StateLimit.query.filter_by(state=state).first()
+    limit = state_limit.limit_amount if state_limit else 50000  # default to 50k if state not in database
+    
     if estate_value < limit:
         return 'affidavit'
     
@@ -622,6 +625,106 @@ def update_user_role(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500  
+    
+
+
+    # State Limits Management (Admin Only)
+@app.route('/api/state-limits', methods=['GET'])
+@admin_required
+def get_state_limits():
+    """Get all state estate limits"""
+    limits = StateLimit.query.order_by(StateLimit.state).all()
+    
+    result = []
+    for limit in limits:
+        result.append({
+            'id': limit.id,
+            'state': limit.state,
+            'limit_amount': limit.limit_amount,
+            'created_at': limit.created_at.isoformat(),
+            'updated_at': limit.updated_at.isoformat()
+        })
+    
+    return jsonify(result)
+
+
+@app.route('/api/state-limits', methods=['POST'])
+@admin_required
+def create_state_limit():
+    """Create a new state limit"""
+    try:
+        data = request.get_json()
+        
+        # Check if state already exists
+        existing = StateLimit.query.filter_by(state=data['state']).first()
+        if existing:
+            return jsonify({'error': 'State limit already exists'}), 400
+        
+        limit = StateLimit(
+            state=data['state'],
+            limit_amount=data['limit_amount']
+        )
+        
+        db.session.add(limit)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'State limit created successfully',
+            'id': limit.id
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+
+@app.route('/api/state-limits/<int:limit_id>', methods=['PATCH'])
+@admin_required
+def update_state_limit(limit_id):
+    """Update a state limit"""
+    try:
+        limit = StateLimit.query.get_or_404(limit_id)
+        data = request.get_json()
+        
+        if 'state' in data:
+            # Check if new state name conflicts with existing
+            existing = StateLimit.query.filter(
+                StateLimit.state == data['state'],
+                StateLimit.id != limit_id
+            ).first()
+            if existing:
+                return jsonify({'error': 'State name already exists'}), 400
+            limit.state = data['state']
+        
+        if 'limit_amount' in data:
+            limit.limit_amount = data['limit_amount']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'State limit updated successfully',
+            'id': limit.id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+
+@app.route('/api/state-limits/<int:limit_id>', methods=['DELETE'])
+@admin_required
+def delete_state_limit(limit_id):
+    """Delete a state limit"""
+    try:
+        limit = StateLimit.query.get_or_404(limit_id)
+        db.session.delete(limit)
+        db.session.commit()
+        
+        return jsonify({'message': 'State limit deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
     
 # ============= RUN THE APP =============
 if __name__ == '__main__':
