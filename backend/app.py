@@ -554,33 +554,6 @@ def get_current_user():
         'role': current_user.role
     }), 200
 
-# TEMPORARY: One-time endpoint to promote yourself to super admin
-@app.route('/api/make-me-super-admin', methods=['POST'])
-@login_required
-def make_super_admin():
-    """One-time use: Promote current user to super admin"""
-    try:
-        # Only allow if there are no super admins yet
-        existing_super_admin = User.query.filter_by(role='super_admin').first()
-        
-        if existing_super_admin:
-            return jsonify({'error': 'A super admin already exists'}), 403
-        
-        current_user.role = 'super_admin'
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'You are now a super admin!',
-            'user': {
-                'id': current_user.id,
-                'email': current_user.email,
-                'role': current_user.role
-            }
-        }), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
 
     # Initialize database tables (one-time setup)
 @app.route('/api/init-db', methods=['GET'])
