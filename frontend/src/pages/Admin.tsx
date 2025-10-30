@@ -10,10 +10,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Shield, Users, Briefcase, ArrowLeft, Eye, UserPlus, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
 import { AdminManagement } from '@/components/admin/AdminManagement';  // ADD THIS LINE
+
 
 interface Submission {
   id: number;
@@ -50,6 +52,16 @@ export default function Admin() {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [saving, setSaving] = useState(false);
+  // ADD THESE NEW LINES:
+  const [addAttorneyDialogOpen, setAddAttorneyDialogOpen] = useState(false);
+  const [newAttorney, setNewAttorney] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    state: '',
+    specialties: [] as string[]     
+  });
 
   useEffect(() => {
     loadData();
@@ -109,6 +121,49 @@ export default function Admin() {
       setSaving(false);
     }
   };
+
+
+const handleAddAttorney = async () => {
+  // Validate required fields
+  if (!newAttorney.first_name || !newAttorney.last_name || !newAttorney.email || !newAttorney.state) {
+    toast.error('Please fill in all required fields');
+    return;
+  }
+
+  setSaving(true);
+  try {
+    await api.createAttorney({
+      first_name: newAttorney.first_name,
+      last_name: newAttorney.last_name,
+      email: newAttorney.email,
+      phone: newAttorney.phone,
+      state: newAttorney.state,
+      specialties: newAttorney.specialties
+    });
+    
+    toast.success('Attorney added successfully');
+    setAddAttorneyDialogOpen(false);
+    
+    // Reset form
+    setNewAttorney({
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone: '',
+      state: '',
+      specialties: []
+    });
+    
+    loadData(); // Reload attorneys list
+  } catch (error: any) {
+    console.error('Error adding attorney:', error);
+    toast.error('Failed to add attorney');
+  } finally {
+    setSaving(false);
+  }
+};
+
+
 
   const getAssignedAttorney = (attorneyId?: number) => {
     if (!attorneyId) return null;
@@ -303,12 +358,20 @@ export default function Admin() {
           {/* Attorneys Tab */}
           <TabsContent value="attorneys">
             <Card>
-              <CardHeader>
-                <CardTitle>Attorney Directory</CardTitle>
-                <CardDescription>
-                  Manage attorneys available for client matching
-                </CardDescription>
-              </CardHeader>
+             <CardHeader>
+            <div className="flex items-center justify-between">
+            <div>
+            <CardTitle>Attorney Directory</CardTitle>
+            <CardDescription>
+              Manage attorneys available for client matching
+            </CardDescription>
+            </div>
+            <Button onClick={() => setAddAttorneyDialogOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+              Add Attorney
+            </Button>
+  </div>
+</CardHeader>
               <CardContent>
                 {attorneys.length === 0 ? (
                   <div className="text-center py-12">
@@ -462,6 +525,121 @@ export default function Admin() {
         </DialogContent>
       </Dialog>
    </div>
+  {/* Add Attorney Dialog */}
+<Dialog open={addAttorneyDialogOpen} onOpenChange={setAddAttorneyDialogOpen}>
+  <DialogContent className="max-w-2xl">
+    <DialogHeader>
+      <DialogTitle>Add New Attorney</DialogTitle>
+      <DialogDescription>
+        Add a new attorney to the directory for client referrals
+      </DialogDescription>
+    </DialogHeader>
+    
+    <div className="space-y-4 py-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="first_name">First Name *</Label>
+          <Input
+            id="first_name"
+            value={newAttorney.first_name}
+            onChange={(e) => setNewAttorney({...newAttorney, first_name: e.target.value})}
+            placeholder="John"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="last_name">Last Name *</Label>
+          <Input
+            id="last_name"
+            value={newAttorney.last_name}
+            onChange={(e) => setNewAttorney({...newAttorney, last_name: e.target.value})}
+            placeholder="Doe"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email">Email *</Label>
+        <Input
+          id="email"
+          type="email"
+          value={newAttorney.email}
+          onChange={(e) => setNewAttorney({...newAttorney, email: e.target.value})}
+          placeholder="john.doe@lawfirm.com"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="phone">Phone</Label>
+        <Input
+          id="phone"
+          type="tel"
+          value={newAttorney.phone}
+          onChange={(e) => setNewAttorney({...newAttorney, phone: e.target.value})}
+          placeholder="(555) 123-4567"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="state">State *</Label>
+        <Select 
+          value={newAttorney.state} 
+          onValueChange={(value) => setNewAttorney({...newAttorney, state: value})}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a state" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="California">California</SelectItem>
+            <SelectItem value="Texas">Texas</SelectItem>
+            <SelectItem value="Florida">Florida</SelectItem>
+            <SelectItem value="New York">New York</SelectItem>
+            <SelectItem value="Illinois">Illinois</SelectItem>
+            {/* Add more states as needed */}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Specialties</Label>
+        <div className="flex flex-wrap gap-2">
+          {['affidavit', 'informal', 'formal', 'trust'].map((specialty) => (
+            <Button
+              key={specialty}
+              type="button"
+              variant={newAttorney.specialties.includes(specialty) ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                const current = newAttorney.specialties;
+                if (current.includes(specialty)) {
+                  setNewAttorney({
+                    ...newAttorney,
+                    specialties: current.filter(s => s !== specialty)
+                  });
+                } else {
+                  setNewAttorney({
+                    ...newAttorney,
+                    specialties: [...current, specialty]
+                  });
+                }
+              }}
+            >
+              {specialty.charAt(0).toUpperCase() + specialty.slice(1)}
+            </Button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <DialogFooter>
+      <Button variant="outline" onClick={() => setAddAttorneyDialogOpen(false)}>
+        Cancel
+      </Button>
+      <Button onClick={handleAddAttorney} disabled={saving}>
+        {saving ? 'Adding...' : 'Add Attorney'}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
     </>
   );
 }
