@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Shield, Users, Briefcase, ArrowLeft, Eye, UserPlus, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
+import { AdminManagement } from '@/components/admin/AdminManagement';  // ADD THIS LINE
 
 interface Submission {
   id: number;
@@ -191,15 +192,19 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="submissions">
               <Users className="h-4 w-4 mr-2" />
               Client Submissions
             </TabsTrigger>
-            <TabsTrigger value="attorneys">
-              <Briefcase className="h-4 w-4 mr-2" />
-              Attorneys
-            </TabsTrigger>
+          <TabsTrigger value="attorneys">
+  <Briefcase className="h-4 w-4 mr-2" />
+  Attorneys
+</TabsTrigger>
+<TabsTrigger value="users">
+  <Shield className="h-4 w-4 mr-2" />
+  User Management
+</TabsTrigger>
           </TabsList>
 
           {/* Submissions Tab */}
@@ -355,8 +360,17 @@ export default function Admin() {
               </CardContent>
             </Card>
           </TabsContent>
+        
+
+        {/* User Management Tab */}
+<TabsContent value="users">
+  <AdminManagement />
+</TabsContent>
+
         </Tabs>
       </div>
+
+      
 
       {/* Edit Submission Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
