@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Shield, Edit } from 'lucide-react';
+import { Shield, Edit, UserPlus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface User {
   id: number;
@@ -25,7 +26,15 @@ export function AdminManagement() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>('');
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false)
+  const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
+const [newUser, setNewUser] = useState({
+  email: '',
+  password: '',
+  first_name: '',
+  last_name: '',
+  role: 'client' as 'client' | 'admin' | 'super_admin'
+});
 
   useEffect(() => {
     fetchUsers();
@@ -67,6 +76,61 @@ export function AdminManagement() {
     }
   };
 
+
+
+  const handleAddUser = async () => {
+  // Validate required fields
+  if (!newUser.email || !newUser.password || !newUser.first_name || !newUser.last_name) {
+    toast.error('Please fill in all required fields');
+    return;
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(newUser.email)) {
+    toast.error('Please enter a valid email address');
+    return;
+  }
+
+  // Validate password length
+  if (newUser.password.length < 6) {
+    toast.error('Password must be at least 6 characters');
+    return;
+  }
+
+  setSaving(true);
+  try {
+    await api.register({
+      email: newUser.email,
+      password: newUser.password,
+      first_name: newUser.first_name,
+      last_name: newUser.last_name,
+      role: newUser.role
+    });
+    
+    toast.success('User created successfully');
+    setAddUserDialogOpen(false);
+    
+    // Reset form
+    setNewUser({
+      email: '',
+      password: '',
+      first_name: '',
+      last_name: '',
+      role: 'client'
+    });
+    
+    fetchUsers(); // Reload users list
+  } catch (error: any) {
+    console.error('Error creating user:', error);
+    toast.error(error.message || 'Failed to create user');
+  } finally {
+    setSaving(false);
+  }
+};
+
+
+
   const getRoleBadge = (role: string) => {
     if (role === 'super_admin') {
       return <Badge variant="destructive">Super Admin</Badge>;
@@ -97,16 +161,22 @@ export function AdminManagement() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            <div>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage user roles and permissions (Super Admin only)
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <Shield className="h-5 w-5" />
+      <div>
+        <CardTitle>User Management</CardTitle>
+        <CardDescription>
+          Manage user roles and permissions (Super Admin only)
+        </CardDescription>
+      </div>
+    </div>
+    <Button onClick={() => setAddUserDialogOpen(true)}>
+      <UserPlus className="h-4 w-4 mr-2" />
+      Add User
+    </Button>
+  </div>
+</CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -202,6 +272,96 @@ export function AdminManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+  {/* Add User Dialog */}
+<Dialog open={addUserDialogOpen} onOpenChange={setAddUserDialogOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Add New User</DialogTitle>
+      <DialogDescription>
+        Create a new user account with a specific role
+      </DialogDescription>
+    </DialogHeader>
+    
+    <div className="space-y-4 py-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="first_name">First Name *</Label>
+          <Input
+            id="first_name"
+            value={newUser.first_name}
+            onChange={(e) => setNewUser({...newUser, first_name: e.target.value})}
+            placeholder="John"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="last_name">Last Name *</Label>
+          <Input
+            id="last_name"
+            value={newUser.last_name}
+            onChange={(e) => setNewUser({...newUser, last_name: e.target.value})}
+            placeholder="Doe"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email">Email *</Label>
+        <Input
+          id="email"
+          type="email"
+          value={newUser.email}
+          onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+          placeholder="user@example.com"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="password">Password *</Label>
+        <Input
+          id="password"
+          type="password"
+          value={newUser.password}
+          onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+          placeholder="Minimum 6 characters"
+        />
+        <p className="text-xs text-muted-foreground">
+          Password must be at least 6 characters long
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="role">Role *</Label>
+        <Select 
+          value={newUser.role} 
+          onValueChange={(value: 'client' | 'admin' | 'super_admin') => setNewUser({...newUser, role: value})}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="client">Client</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="super_admin">Super Admin</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          {newUser.role === 'client' && 'Can only view their own submissions'}
+          {newUser.role === 'admin' && 'Can access admin portal and view all submissions'}
+          {newUser.role === 'super_admin' && 'Full access including user management'}
+        </p>
+      </div>
+    </div>
+
+    <DialogFooter>
+      <Button variant="outline" onClick={() => setAddUserDialogOpen(false)}>
+        Cancel
+      </Button>
+      <Button onClick={handleAddUser} disabled={saving}>
+        {saving ? 'Creating...' : 'Create User'}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
     </>
   );
 }

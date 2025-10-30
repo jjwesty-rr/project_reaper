@@ -100,7 +100,7 @@ async createAttorney(data: any) {
     return response.json();
   },
  // Authentication methods
-  async register(data: { email: string; password: string; first_name?: string; last_name?: string }) {
+async register(data: { email: string; password: string; first_name?: string; last_name?: string; role?: string }) {
     const response = await fetch(`${API_URL}/api/register`, {
       method: 'POST',
       headers: {
