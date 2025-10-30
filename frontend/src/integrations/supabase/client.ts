@@ -64,22 +64,23 @@ async getSubmissions() {
     return response.json();
   },
 
-  // Create a new attorney
-  async createAttorney(data: any) {
-    const response = await fetch(`${API_URL}/api/attorneys`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to create attorney');
-    }
-    
-    return response.json();
-  },
+// Create a new attorney
+async createAttorney(data: any) {
+  const response = await fetch(`${API_URL}/api/attorneys`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',  // ADD THIS LINE
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to create attorney');
+  }
+  
+  return response.json();
+},
 
   // Update a submission (assign attorney, change status, add notes)
   async updateSubmission(id: number, updates: any) {
