@@ -24,7 +24,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
     return <Navigate to="/auth" replace />;
   }
 
-  if (requireAdmin && user.role !== 'admin') {
+  if (requireAdmin && !['admin', 'super_admin'].includes(user.role)) {
     return <Navigate to="/home" replace />;
   }
 
