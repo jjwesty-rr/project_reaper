@@ -319,7 +319,7 @@ const handleAddAttorney = async () => {
                             <TableCell className="font-medium">{submission.decedent_name}</TableCell>
                             <TableCell className="text-sm">{submission.contact_email}</TableCell>
                             <TableCell>{submission.decedent_state}</TableCell>
-                            <TableCell>${submission.estate_value.toLocaleString()}</TableCell>
+                            <TableCell>${submission.estate_value?.toLocaleString() || '0'}</TableCell>
                             <TableCell>
                               <Badge className={getReferralBadge(submission.referral_type)}>
                                 {submission.referral_type}
@@ -486,7 +486,7 @@ const handleAddAttorney = async () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium mb-1">Estate Value</p>
-                  <p className="text-sm text-muted-foreground">${editingSubmission.estate_value.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">${editingSubmission.estate_value?.toLocaleString() || '0'}</p>
                 </div>
                 <div>
   <p className="text-sm font-medium mb-1">Estate Plan Document</p>
