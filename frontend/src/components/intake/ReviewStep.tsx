@@ -105,6 +105,7 @@ const handleSubmit = async () => {
       totalNetAssetValue: data.totalNetAssetValue,
       assetsInDomicileState: data.assetsInDomicileState,
       referralType: referralType,
+      trustDocumentName: data.trustDocumentName,
     };
 
     let response;
