@@ -11,6 +11,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -130,26 +137,18 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>What type of estate plan did they have?</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col gap-3"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="trust" id="type-trust" />
-                        <label htmlFor="type-trust" className="cursor-pointer">Trust</label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="will" id="type-will" />
-                        <label htmlFor="type-will" className="cursor-pointer">Will</label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="unknown" id="type-unknown" />
-                        <label htmlFor="type-unknown" className="cursor-pointer">I Don't Know</label>
-                      </div>
-                    </RadioGroup>
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select estate plan type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="trust">Trust</SelectItem>
+                      <SelectItem value="will">Will</SelectItem>
+                      <SelectItem value="unknown">I Don't Know</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

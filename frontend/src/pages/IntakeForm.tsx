@@ -122,6 +122,10 @@ setFormData(transformedData);
     setCurrentStep(7);
   };
 
+  const handleStepClick = (stepId: number) => {
+    setCurrentStep(stepId);
+  };
+
 
   if (loading) {
     return (
@@ -232,7 +236,12 @@ case 7:
         </div>
 
         <Card className="p-8">
-          <FormProgress steps={steps} currentStep={currentStep} />
+          <FormProgress 
+            steps={steps} 
+            currentStep={currentStep}
+            onStepClick={handleStepClick}
+            allowClickableSteps={!!submissionId}
+          />
           {renderStep()}
         </Card>
       </div>
