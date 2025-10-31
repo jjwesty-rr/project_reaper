@@ -83,7 +83,7 @@ const handleSubmit = async () => {
       decedent_state: data.decedentInfo?.domicileState || '',
       estate_value: data.totalNetAssetValue || 0,
       has_will: true,
-      has_trust: data.hasTrust || false,
+      has_trust: data.hasEstatePlan || false,
       has_disputes: data.hasContestingBeneficiaries || false,
     };
 
@@ -98,7 +98,8 @@ const handleSubmit = async () => {
       hasChildren: data.hasChildren,
       children: data.children,
       representativeInfo: data.representativeInfo,
-      hasTrust: data.hasTrust,
+      hasEstatePlan: data.hasEstatePlan,
+      estatePlanType: data.estatePlanType,
       hasContestingBeneficiaries: data.hasContestingBeneficiaries,
       contestingBeneficiariesInfo: data.contestingBeneficiariesInfo,
       assets: data.assets,
@@ -233,8 +234,8 @@ const handleSubmit = async () => {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Has Trust:</span>
-            <Badge variant={data.hasTrust ? "default" : "secondary"}>
-              {data.hasTrust ? "Yes" : "No"}
+            <Badge variant={data.hasEstatePlan ? "default" : "secondary"}>
+              {data.hasEstatePlan ? "Yes" : "No"}
             </Badge>
           </div>
           <div className="flex justify-between">
