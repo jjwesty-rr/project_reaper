@@ -69,19 +69,21 @@ export interface IntakeFormData {
   // Step 2: Decedent Info
   decedentInfo?: DecedentInfo;
   
-  // Step 3: Family Structure
+  // Step 3: Trust & Beneficiaries (MOVED UP)
+  hasTrust?: boolean;
+  trustDocument?: File;
+  trustDocumentName?: string;
+  hasContestingBeneficiaries?: boolean;
+  contestingBeneficiariesInfo?: string;
+  
+  // Step 4: Family Structure (MOVED DOWN)
   isMarried?: boolean;
   spouseInfo?: SpouseInfo;
   hasChildren?: boolean;
   children?: ChildInfo[];
   
-  // Step 4: Representative
+  // Step 5: Representative
   representativeInfo?: RepresentativeInfo;
-  
-  // Step 5: Trust & Beneficiaries
-  hasTrust?: boolean;
-  hasContestingBeneficiaries?: boolean;
-  contestingBeneficiariesInfo?: string;
   
   // Step 6: Assets
   assets?: AssetInfo[];

@@ -16,9 +16,9 @@ import { toast } from "sonner";
 const steps = [
   { id: 1, name: "Contact", description: "Your information" },
   { id: 2, name: "Decedent", description: "Deceased information" },
-  { id: 3, name: "Family", description: "Family structure" },
-  { id: 4, name: "Representative", description: "Estate representative" },
-  { id: 5, name: "Trust", description: "Trust & beneficiaries" },
+  { id: 3, name: "Trust", description: "Trust & will information" },
+  { id: 4, name: "Family", description: "Family structure" },
+  { id: 5, name: "Representative", description: "Estate representative" },
   { id: 6, name: "Assets", description: "Asset details" },
   { id: 7, name: "Review", description: "Final review" },
 ];
@@ -71,14 +71,15 @@ const transformedData: IntakeFormData = {
     dateOfBirth: "",
     diedInDomicileState: false
   },
+  hasTrust: submission.form_data.has_trust || submission.has_trust,
+  trustDocumentName: submission.form_data.trust_document_name || undefined,
+  hasContestingBeneficiaries: submission.form_data.has_disputes || submission.has_disputes,
+  contestingBeneficiariesInfo: undefined,
   isMarried: undefined,
   spouseInfo: undefined,
   hasChildren: undefined,
   children: undefined,
   representativeInfo: undefined,
-  hasTrust: submission.form_data.has_trust || submission.has_trust,
-  hasContestingBeneficiaries: submission.form_data.has_disputes || submission.has_disputes,
-  contestingBeneficiariesInfo: undefined,
   assets: undefined,
   totalNetAssetValue: submission.form_data.estate_value || submission.estate_value,
 };
@@ -156,7 +157,7 @@ setFormData(transformedData);
         );
       case 3:
         return (
-          <FamilyInfoStep
+          <TrustBeneficiaryStep
             data={formData}
             onNext={(data) => {
               updateFormData(data);
@@ -168,7 +169,7 @@ setFormData(transformedData);
         );
       case 4:
         return (
-          <RepresentativeStep
+          <FamilyInfoStep
             data={formData}
             onNext={(data) => {
               updateFormData(data);
@@ -180,7 +181,7 @@ setFormData(transformedData);
         );
       case 5:
         return (
-          <TrustBeneficiaryStep
+          <RepresentativeStep
             data={formData}
             onNext={(data) => {
               updateFormData(data);

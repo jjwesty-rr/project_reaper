@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useState } from "react";
 import {
   Form,
   FormControl,
@@ -13,7 +14,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
 import { IntakeFormData } from "@/types/intake";
+import { Upload, X, FileText } from "lucide-react";
 
 const trustBeneficiarySchema = z.object({
   hasTrust: z.enum(["yes", "no"], { required_error: "Please select an option" }),
@@ -29,6 +32,11 @@ interface TrustBeneficiaryStepProps {
 }
 
 export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: TrustBeneficiaryStepProps) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [existingFileName, setExistingFileName] = useState<string | null>(
+    data?.trustDocumentName || null
+  );
+
   const form = useForm<z.infer<typeof trustBeneficiarySchema>>({
     resolver: zodResolver(trustBeneficiarySchema),
     defaultValues: {
@@ -40,11 +48,31 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
 
   const watchHasContesting = form.watch("hasContestingBeneficiaries");
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === "application/pdf") {
+      setSelectedFile(file);
+      setExistingFileName(null); // Clear existing file name when new file selected
+    } else if (file) {
+      alert("Please select a PDF file");
+      e.target.value = "";
+    }
+  };
+
+  const removeFile = () => {
+    setSelectedFile(null);
+    setExistingFileName(null);
+    const fileInput = document.getElementById("trust-document") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
+  };
+
   const onSubmit = (values: z.infer<typeof trustBeneficiarySchema>) => {
     onNext({
       hasTrust: values.hasTrust === "yes",
       hasContestingBeneficiaries: values.hasContestingBeneficiaries === "yes",
       contestingBeneficiariesInfo: values.contestingBeneficiariesInfo,
+      trustDocument: selectedFile || undefined,
+      trustDocumentName: selectedFile?.name || existingFileName || undefined,
     });
   };
 
@@ -52,10 +80,10 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold text-foreground mb-2">
-          Trust & Beneficiaries
+          Trust & Will Information
         </h2>
         <p className="text-muted-foreground">
-          Information about trusts and potential estate disputes.
+          Information about trusts, wills, and potential estate disputes.
         </p>
       </div>
 
@@ -66,10 +94,7 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
             name="hasTrust"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Did the decedent have a trust?</FormLabel>
-                <FormDescription>
-                  A trust is a legal arrangement where assets are held by a trustee for beneficiaries.
-                </FormDescription>
+                <FormLabel>Did the decedent have a trust or will?</FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -91,16 +116,63 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
             )}
           />
 
+          {/* Document Upload Section */}
+          <div className="space-y-2">
+            <FormLabel>Upload Trust or Will Document (Optional)</FormLabel>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+              {!selectedFile && !existingFileName ? (
+                <div className="space-y-2">
+                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="text-sm text-gray-600">
+                    <label htmlFor="trust-document" className="cursor-pointer text-primary hover:text-primary/80 font-medium">
+                      Click to upload
+                    </label>
+                    {" "}or drag and drop
+                  </div>
+                  <p className="text-xs text-gray-500">PDF files only</p>
+                  <Input
+                    id="trust-document"
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-8 w-8 text-primary" />
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-gray-900">
+                        {selectedFile?.name || existingFileName}
+                      </p>
+                      {selectedFile && (
+                        <p className="text-xs text-gray-500">
+                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={removeFile}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
           <FormField
             control={form.control}
             name="hasContestingBeneficiaries"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Are there any contesting beneficiaries?</FormLabel>
-                <FormDescription>
-                  Contesting beneficiaries are individuals who dispute the distribution of assets 
-                  or validity of the will/trust.
-                </FormDescription>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
