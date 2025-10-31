@@ -18,8 +18,9 @@ import { Input } from "@/components/ui/input";
 import { IntakeFormData } from "@/types/intake";
 import { Upload, X, FileText } from "lucide-react";
 
-const trustBeneficiarySchema = z.object({
-  hasTrust: z.enum(["yes", "no"], { required_error: "Please select an option" }),
+const estatePlanSchema = z.object({
+  hasEstatePlan: z.enum(["yes", "no"], { required_error: "Please select an option" }),
+  estatePlanType: z.enum(["trust", "will", "unknown"]).optional(),
   hasContestingBeneficiaries: z.enum(["yes", "no"], { required_error: "Please select an option" }),
   contestingBeneficiariesInfo: z.string().max(1000).optional(),
 });
@@ -37,22 +38,25 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
     data?.trustDocumentName || null
   );
 
-  const form = useForm<z.infer<typeof trustBeneficiarySchema>>({
-    resolver: zodResolver(trustBeneficiarySchema),
+  const form = useForm<z.infer<typeof estatePlanSchema>>({
+    resolver: zodResolver(estatePlanSchema),
     defaultValues: {
-      hasTrust: data?.hasTrust !== undefined ? (data.hasTrust ? "yes" : "no") : undefined,
+      hasEstatePlan: data?.hasEstatePlan !== undefined ? (data.hasEstatePlan ? "yes" : "no") : undefined,
+      estatePlanType: data?.estatePlanType || undefined,
       hasContestingBeneficiaries: data?.hasContestingBeneficiaries !== undefined ? (data.hasContestingBeneficiaries ? "yes" : "no") : undefined,
       contestingBeneficiariesInfo: data?.contestingBeneficiariesInfo || "",
     },
   });
 
+  const watchHasEstatePlan = form.watch("hasEstatePlan");
+  const watchEstatePlanType = form.watch("estatePlanType");
   const watchHasContesting = form.watch("hasContestingBeneficiaries");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type === "application/pdf") {
       setSelectedFile(file);
-      setExistingFileName(null); // Clear existing file name when new file selected
+      setExistingFileName(null);
     } else if (file) {
       alert("Please select a PDF file");
       e.target.value = "";
@@ -66,9 +70,10 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
     if (fileInput) fileInput.value = "";
   };
 
-  const onSubmit = (values: z.infer<typeof trustBeneficiarySchema>) => {
+  const onSubmit = (values: z.infer<typeof estatePlanSchema>) => {
     onNext({
-      hasTrust: values.hasTrust === "yes",
+      hasEstatePlan: values.hasEstatePlan === "yes",
+      estatePlanType: values.estatePlanType,
       hasContestingBeneficiaries: values.hasContestingBeneficiaries === "yes",
       contestingBeneficiariesInfo: values.contestingBeneficiariesInfo,
       trustDocument: selectedFile || undefined,
@@ -80,21 +85,22 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold text-foreground mb-2">
-          Trust & Will Information
+          Estate Plan
         </h2>
         <p className="text-muted-foreground">
-          Information about trusts, wills, and potential estate disputes.
+          Please enter information about the decedent's estate plan.
         </p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Question 1: Did they have an estate plan? */}
           <FormField
             control={form.control}
-            name="hasTrust"
+            name="hasEstatePlan"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Did the decedent have a trust or will?</FormLabel>
+                <FormLabel>Did the decedent have an estate plan?</FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -102,12 +108,12 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
                     className="flex gap-4"
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="trust-yes" />
-                      <label htmlFor="trust-yes" className="cursor-pointer">Yes</label>
+                      <RadioGroupItem value="yes" id="estate-plan-yes" />
+                      <label htmlFor="estate-plan-yes" className="cursor-pointer">Yes</label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="trust-no" />
-                      <label htmlFor="trust-no" className="cursor-pointer">No</label>
+                      <RadioGroupItem value="no" id="estate-plan-no" />
+                      <label htmlFor="estate-plan-no" className="cursor-pointer">No</label>
                     </div>
                   </RadioGroup>
                 </FormControl>
@@ -116,57 +122,94 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
             )}
           />
 
-          {/* Document Upload Section */}
-          <div className="space-y-2">
-            <FormLabel>Upload Trust or Will Document (Optional)</FormLabel>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-              {!selectedFile && !existingFileName ? (
-                <div className="space-y-2">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="text-sm text-gray-600">
-                    <label htmlFor="trust-document" className="cursor-pointer text-primary hover:text-primary/80 font-medium">
-                      Click to upload
-                    </label>
-                    {" "}or drag and drop
-                  </div>
-                  <p className="text-xs text-gray-500">PDF files only</p>
-                  <Input
-                    id="trust-document"
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </div>
-              ) : (
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-8 w-8 text-primary" />
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900">
-                        {selectedFile?.name || existingFileName}
-                      </p>
-                      {selectedFile && (
-                        <p className="text-xs text-gray-500">
-                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={removeFile}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+          {/* Question 2: What type? (Only shows if they answered YES) */}
+          {watchHasEstatePlan === "yes" && (
+            <FormField
+              control={form.control}
+              name="estatePlanType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>What type of estate plan did they have?</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col gap-3"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="trust" id="type-trust" />
+                        <label htmlFor="type-trust" className="cursor-pointer">Trust</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="will" id="type-will" />
+                        <label htmlFor="type-will" className="cursor-pointer">Will</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="unknown" id="type-unknown" />
+                        <label htmlFor="type-unknown" className="cursor-pointer">I Don't Know</label>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-          </div>
+            />
+          )}
 
+          {/* Document Upload (Only shows if they picked Trust or Will) */}
+          {watchHasEstatePlan === "yes" && (watchEstatePlanType === "trust" || watchEstatePlanType === "will") && (
+            <div className="space-y-2">
+              <FormLabel>Upload {watchEstatePlanType === "trust" ? "Trust" : "Will"} Document (Optional)</FormLabel>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                {!selectedFile && !existingFileName ? (
+                  <div className="space-y-2">
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="text-sm text-gray-600">
+                      <label htmlFor="trust-document" className="cursor-pointer text-primary hover:text-primary/80 font-medium">
+                        Click to upload
+                      </label>
+                      {" "}or drag and drop
+                    </div>
+                    <p className="text-xs text-gray-500">PDF files only</p>
+                    <Input
+                      id="trust-document"
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-8 w-8 text-primary" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-gray-900">
+                          {selectedFile?.name || existingFileName}
+                        </p>
+                        {selectedFile && (
+                          <p className="text-xs text-gray-500">
+                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={removeFile}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Contesting Beneficiaries Question */}
           <FormField
             control={form.control}
             name="hasContestingBeneficiaries"
@@ -194,6 +237,7 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
             )}
           />
 
+          {/* Contesting Details (Only if they answered YES) */}
           {watchHasContesting === "yes" && (
             <FormField
               control={form.control}

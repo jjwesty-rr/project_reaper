@@ -16,7 +16,7 @@ import { toast } from "sonner";
 const steps = [
   { id: 1, name: "Contact", description: "Your information" },
   { id: 2, name: "Decedent", description: "Deceased information" },
-  { id: 3, name: "Trust", description: "Trust & will information" },
+  { id: 3, name: "Estate Plan", description: "Estate planning" },
   { id: 4, name: "Family", description: "Family structure" },
   { id: 5, name: "Representative", description: "Estate representative" },
   { id: 6, name: "Assets", description: "Asset details" },
@@ -71,7 +71,8 @@ const transformedData: IntakeFormData = {
     dateOfBirth: "",
     diedInDomicileState: false
   },
-  hasTrust: submission.form_data.has_trust || submission.has_trust,
+  hasEstatePlan: submission.form_data.has_trust || submission.has_trust,
+  estatePlanType: submission.form_data.estate_plan_type || undefined,
   trustDocumentName: submission.form_data.trust_document_name || undefined,
   hasContestingBeneficiaries: submission.form_data.has_disputes || submission.has_disputes,
   contestingBeneficiariesInfo: undefined,

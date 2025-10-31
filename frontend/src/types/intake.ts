@@ -69,8 +69,9 @@ export interface IntakeFormData {
   // Step 2: Decedent Info
   decedentInfo?: DecedentInfo;
   
-  // Step 3: Trust & Beneficiaries (MOVED UP)
-  hasTrust?: boolean;
+  // Step 3: Estate Plan (MOVED UP)
+  hasEstatePlan?: boolean;
+  estatePlanType?: 'trust' | 'will' | 'unknown';
   trustDocument?: File;
   trustDocumentName?: string;
   hasContestingBeneficiaries?: boolean;
