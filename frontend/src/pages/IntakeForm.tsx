@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { FormProgress } from "@/components/intake/FormProgress";
 import { ContactInfoStep } from "@/components/intake/ContactInfoStep";
@@ -12,6 +12,7 @@ import { ReviewStep } from "@/components/intake/ReviewStep";
 import { IntakeFormData } from "@/types/intake";
 import { api } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 
 const steps = [
   { id: 1, name: "Contact", description: "Your information" },
@@ -25,6 +26,7 @@ const steps = [
 
 const IntakeForm = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<IntakeFormData>({});
@@ -124,6 +126,29 @@ setFormData(transformedData);
 
   const handleStepClick = (stepId: number) => {
     setCurrentStep(stepId);
+  };
+
+  const handleSaveAndGoBack = async () => {
+    try {
+      setLoading(true);
+      
+      if (submissionId) {
+        // Update existing submission
+        await api.updateSubmission(submissionId, formData);
+        toast.success('Progress saved successfully');
+      } else {
+        // Create new submission with partial data
+        const newSubmission = await api.createSubmission(formData);
+        toast.success('Progress saved successfully');
+      }
+      
+      navigate('/home');
+    } catch (error: any) {
+      console.error('Error saving:', error);
+      toast.error('Failed to save progress');
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -233,6 +258,17 @@ case 7:
               ? 'Update your estate settlement information' 
               : 'Help us understand your estate settlement needs'}
           </p>
+        </div>
+
+        <div className="mb-4">
+          <button
+            onClick={handleSaveAndGoBack}
+            className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+            disabled={loading}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Save and Go Back to Dashboard</span>
+          </button>
         </div>
 
         <Card className="p-8">
