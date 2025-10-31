@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Shield, Users, Briefcase, ArrowLeft, Eye, UserPlus, Edit, DollarSign } from 'lucide-react';
+import { Shield, Users, Briefcase, ArrowLeft, Eye, UserPlus, Edit, DollarSign, FileText, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
 import { AdminManagement } from '@/components/admin/AdminManagement';  
@@ -29,6 +29,8 @@ interface Submission {
   status: string;
   attorney_id?: number;
   notes?: string;
+  has_document?: boolean;      
+  document_filename?: string; 
   created_at: string;
 }
 
@@ -486,6 +488,43 @@ const handleAddAttorney = async () => {
                   <p className="text-sm font-medium mb-1">Estate Value</p>
                   <p className="text-sm text-muted-foreground">${editingSubmission.estate_value.toLocaleString()}</p>
                 </div>
+                <div>
+  <p className="text-sm font-medium mb-1">Estate Plan Document</p>
+  {editingSubmission.has_document ? (
+    <div className="flex items-center gap-2">
+      <FileText className="h-4 w-4 text-primary" />
+      <span className="text-sm text-muted-foreground">
+        {editingSubmission.document_filename}
+      </span>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={async () => {
+          try {
+            const response = await api.downloadDocument(editingSubmission.id);
+            const url = window.URL.createObjectURL(response);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = editingSubmission.document_filename || 'document.pdf';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            toast.success('Document downloaded');
+          } catch (error) {
+            console.error('Download error:', error);
+            toast.error('Failed to download document');
+          }
+        }}
+      >
+        <Download className="h-4 w-4 mr-1" />
+        Download
+      </Button>
+    </div>
+  ) : (
+    <p className="text-sm text-muted-foreground">No document uploaded</p>
+  )}
+</div>
               </div>
 
               <div className="space-y-2">

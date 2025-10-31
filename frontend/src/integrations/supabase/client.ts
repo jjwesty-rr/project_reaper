@@ -245,7 +245,37 @@ async deleteStateLimit(id: number) {
   return response.json();
 },
 
+async downloadDocument(submissionId: number): Promise<Blob> {
+  const response = await fetch(`${API_URL}/api/download-document/${submissionId}`, {
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to download document');
+  }
+  
+  return await response.blob();
+},
+
+async uploadDocument(submissionId: number, file: File): Promise<void> {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch(`${API_URL}/api/upload-document/${submissionId}`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to upload document');
+  }
+}
+
+
 };
+
+
 
 
 // For backwards compatibility with code that imports "supabase"

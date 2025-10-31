@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask import Flask, request, jsonify, send_from_directory  # Add send_from_directory
+from werkzeug.utils import secure_filename  # Add this new import
 from datetime import datetime
 import os
 import json
@@ -12,6 +14,15 @@ from functools import wraps
 # Create Flask app
 app = Flask(__name__)
 
+# File upload configuration
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+ALLOWED_EXTENSIONS = {'pdf'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+# Create uploads directory if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 # Enable CORS so your React app can talk to this Flask backend
 CORS(app, 
      supports_credentials=True,
@@ -22,6 +33,9 @@ CORS(app,
      ],
      allow_headers=['Content-Type', 'Authorization'],
      methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Initialize authentication
 bcrypt = Bcrypt(app)
@@ -152,6 +166,10 @@ class Submission(db.Model):
     has_trust = db.Column(db.Boolean)
     has_disputes = db.Column(db.Boolean)
     
+   # Document Upload
+    trust_document_path = db.Column(db.String(500), nullable=True)
+    trust_document_filename = db.Column(db.String(500), nullable=True)
+
     # Referral Type (determined by logic)
     referral_type = db.Column(db.String(50))  # 'affidavit', 'informal', 'formal', 'trust'
     
@@ -277,6 +295,8 @@ def get_submissions():
             'status': sub.status,
             'attorney_id': sub.attorney_id,
             'notes': sub.notes,
+            'has_document': sub.trust_document_path is not None,  
+            'document_filename': sub.trust_document_filename,      
             'created_at': sub.created_at.isoformat()
         })
     
@@ -300,6 +320,8 @@ def get_my_submissions():
             'referral_type': sub.referral_type,
             'status': sub.status,
             'attorney_id': sub.attorney_id,
+            'has_document': sub.trust_document_path is not None,  
+            'document_filename': sub.trust_document_filename,
             'created_at': sub.created_at.isoformat(),
             'updated_at': sub.updated_at.isoformat()
         })
@@ -327,6 +349,8 @@ def get_submission(submission_id):
         'has_disputes': submission.has_disputes,
         'referral_type': submission.referral_type,
         'status': submission.status,
+        'has_document': submission.trust_document_path is not None, 
+        'document_filename': submission.trust_document_filename, 
         'created_at': submission.created_at.isoformat()
     }
     
@@ -725,6 +749,82 @@ def delete_state_limit(limit_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
+    
+
+
+
+# ============= FILE UPLOAD/DOWNLOAD ROUTES =============
+
+@app.route('/api/upload-document/<int:submission_id>', methods=['POST'])
+@login_required
+def upload_document(submission_id):
+    """Upload a trust/will document for a submission"""
+    try:
+        submission = Submission.query.get_or_404(submission_id)
+        
+        # Check permissions: user must own the submission or be admin
+        if not current_user.is_admin() and submission.user_id != current_user.id:
+            return jsonify({'error': 'Permission denied'}), 403
+        
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        if not allowed_file(file.filename):
+            return jsonify({'error': 'Only PDF files are allowed'}), 400
+        
+        # Create unique filename: submission_id_timestamp_originalname.pdf
+        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        original_filename = secure_filename(file.filename)
+        filename = f"submission_{submission_id}_{timestamp}_{original_filename}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        # Save file
+        file.save(filepath)
+        
+        # Update submission record
+        submission.trust_document_path = filename
+        submission.trust_document_filename = original_filename
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Document uploaded successfully',
+            'filename': original_filename
+        }), 200
+        
+    except Exception as e:
+        print(f"Upload error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/download-document/<int:submission_id>', methods=['GET'])
+@login_required
+def download_document(submission_id):
+    """Download a trust/will document"""
+    try:
+        submission = Submission.query.get_or_404(submission_id)
+        
+        # Check permissions
+        if not current_user.is_admin() and submission.user_id != current_user.id:
+            return jsonify({'error': 'Permission denied'}), 403
+        
+        if not submission.trust_document_path:
+            return jsonify({'error': 'No document uploaded for this submission'}), 404
+        
+        return send_from_directory(
+            app.config['UPLOAD_FOLDER'],
+            submission.trust_document_path,
+            as_attachment=True,
+            download_name=submission.trust_document_filename or 'document.pdf'
+        )
+        
+    except Exception as e:
+        print(f"Download error: {e}")
+        return jsonify({'error': str(e)}), 500
     
 # ============= RUN THE APP =============
 if __name__ == '__main__':

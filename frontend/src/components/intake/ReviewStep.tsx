@@ -109,29 +109,39 @@ const handleSubmit = async () => {
 
     let response;
     
-    if (submissionId) {
-      // UPDATE existing submission
-      response = await api.updateSubmission(parseInt(submissionId), completeFormData);
-      
-      toast({
-        title: "Submission Updated Successfully!",
-        description: "Your changes have been saved.",
-      });
-      
-      navigate(`/status/${submissionId}`);
-    } else {
-      // CREATE new submission
-      response = await api.createSubmission(completeFormData);
+   if (submissionId) {
+  // UPDATE existing submission
+  response = await api.updateSubmission(parseInt(submissionId), completeFormData);
+  
+  // Upload document if present
+  if (data.trustDocument) {
+    await api.uploadDocument(parseInt(submissionId), data.trustDocument);
+  }
+  
+  toast({
+    title: "Submission Updated Successfully!",
+    description: "Your changes have been saved.",
+  });
+  
+  navigate(`/status/${submissionId}`);
+} else {
+  // CREATE new submission
+  response = await api.createSubmission(completeFormData);
+  
+  // Upload document if present
+  if (data.trustDocument) {
+    await api.uploadDocument(response.submission_id, data.trustDocument);
+  }
 
-      toast({
-        title: "Form Submitted Successfully!",
-        description: `Your case has been classified as: ${response.referral_type}`,
-      });
+  toast({
+    title: "Form Submitted Successfully!",
+    description: `Your case has been classified as: ${response.referral_type}`,
+  });
 
-      // Store submission ID in localStorage
-      localStorage.setItem('lastSubmissionId', response.submission_id.toString());
-      navigate(`/status/${response.submission_id}`);
-    }
+  // Store submission ID in localStorage
+  localStorage.setItem('lastSubmissionId', response.submission_id.toString());
+  navigate(`/status/${response.submission_id}`);
+}
   } catch (error: any) {
     console.error("Error submitting form:", error);
     toast({
