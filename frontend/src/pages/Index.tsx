@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import { api } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { ProgressiveChecklist } from "@/components/ProgressiveChecklist";
 
 interface Submission {
   id: number;
@@ -154,10 +155,23 @@ const Index = () => {
                   </Card>
                 ))}
               </div>
-            )}
+           )}
           </div>
 
-        
+          {/* TEST: Progressive Checklist Animation */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Submission Requirements</h2>
+            <ProgressiveChecklist
+              items={[
+                { id: '1', label: 'Estate value verified' },
+                { id: '2', label: 'Beneficiaries identified' },
+                { id: '3', label: 'Representative confirmed' },
+                { id: '4', label: 'State requirements met' },
+                { id: '5', label: 'Ready for attorney assignment' },
+              ]}
+            />
+          </div>
+
         </div>
       </div>
     </>
