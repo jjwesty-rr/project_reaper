@@ -270,6 +270,10 @@ const handleAddAttorney = async () => {
   <Shield className="h-4 w-4 mr-2" />
   User Management
 </TabsTrigger>
+  <TabsTrigger value="state-limits">
+    <DollarSign className="h-4 w-4 mr-2" />
+    State Limits
+  </TabsTrigger>
           </TabsList>
 
           {/* Submissions Tab */}
@@ -364,16 +368,6 @@ const handleAddAttorney = async () => {
               </CardContent>
             </Card>
           </TabsContent>
-
- {/* State Limit Tab */}
-          <TabsTrigger value="users">
-  <Shield className="h-4 w-4 mr-2" />
-  User Management
-</TabsTrigger>
-<TabsTrigger value="state-limits">
-  <DollarSign className="h-4 w-4 mr-2" />
-  State Limits
-</TabsTrigger>
 
 
           {/* Attorneys Tab */}
