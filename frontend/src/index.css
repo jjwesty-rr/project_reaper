@@ -198,3 +198,17 @@
     transform: translateY(-2px);
   }
 }
+
+/* Button hover states - darker on hover */
+button:hover,
+.btn:hover,
+[role="button"]:hover {
+  filter: brightness(0.85);
+}
+
+/* Primary buttons get even darker */
+button[class*="primary"]:hover,
+.btn-primary:hover,
+[class*="Primary"]:hover {
+  background: hsl(215, 35%, 22%) !important;
+}
