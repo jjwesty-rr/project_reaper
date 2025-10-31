@@ -591,7 +591,40 @@ def init_db():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+@app.route('/api/migrate-db', methods=['GET'])
+def migrate_db():
+    """Add missing columns to submission table"""
+    try:
+        from sqlalchemy import text
+        
+        # Add trust_document_path column
+        try:
+            db.session.execute(text(
+                "ALTER TABLE submission ADD COLUMN trust_document_path VARCHAR(500)"
+            ))
+            db.session.commit()
+            print("Added trust_document_path column")
+        except Exception as e:
+            print(f"Column might already exist: {e}")
+            db.session.rollback()
+        
+        # Add trust_document_filename column
+        try:
+            db.session.execute(text(
+                "ALTER TABLE submission ADD COLUMN trust_document_filename VARCHAR(500)"
+            ))
+            db.session.commit()
+            print("Added trust_document_filename column")
+        except Exception as e:
+            print(f"Column might already exist: {e}")
+            db.session.rollback()
+        
+        return jsonify({'message': 'Database migration completed!'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 
+    
       # User Management (Super Admin Only)
 @app.route('/api/users', methods=['GET'])
 @super_admin_required
