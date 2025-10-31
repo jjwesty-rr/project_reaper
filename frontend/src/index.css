@@ -2,73 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* 
+  ESTATE GURU DESIGN SYSTEM
+  Professional, humanistic design with subtle motion
+  - Font: Inter
+  - Color: Balanced Blue (35% saturation)
+  - Roundness: 0.75rem (12px)
 */
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 217 91% 35%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 214 32% 91%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 217 91% 35%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 214 32% 85%;
-    --input: 214 32% 85%;
-    --ring: 217 91% 35%;
-    --radius: 0.5rem;
+    /* NEUTRALS - Clean and sophisticated */
+    --background: 0 0% 98%;              /* Near-white background */
+    --foreground: 215 35% 32%;           /* Balanced blue-gray text */
+    
+    /* CARDS & SURFACES */
+    --card: 0 0% 100%;                   /* Pure white cards */
+    --card-foreground: 215 35% 32%;      /* Blue-gray text on cards */
+    --popover: 0 0% 100%;                /* Dropdown backgrounds */
+    --popover-foreground: 215 35% 32%;   /* Dropdown text */
+    
+    /* PRIMARY - Balanced blue for trust and professionalism */
+    --primary: 215 35% 32%;              /* Balanced blue */
+    --primary-foreground: 0 0% 100%;     /* White text on primary */
+    
+    /* SECONDARY - Subtle backgrounds */
+    --secondary: 215 40% 96%;            /* Very light blue */
+    --secondary-foreground: 215 35% 32%; /* Dark text on secondary */
+    
+    /* MUTED - For less important elements */
+    --muted: 215 40% 96%;                /* Light background */
+    --muted-foreground: 215 15% 45%;     /* Medium gray text */
+    
+    /* ACCENT - Highlight color */
+    --accent: 215 35% 50%;               /* Slightly lighter blue */
+    --accent-foreground: 0 0% 100%;      /* White text on accent */
+    
+    /* DESTRUCTIVE - Error states */
+    --destructive: 0 84% 60%;            /* Bright red */
+    --destructive-foreground: 0 0% 98%;  /* Off-white text */
+    
+    /* BORDERS & INPUTS */
+    --border: 215 35% 88%;               /* Light blue-gray border */
+    --input: 215 35% 88%;                /* Input border color */
+    --ring: 215 35% 32%;                 /* Focus ring (primary) */
+    
+    /* BORDER RADIUS - Modern and soft */
+    --radius: 0.75rem;                   /* 12px */
+    
+    /* SIDEBAR */
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 217 91% 35%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 214 32% 91%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 85%;
-    --sidebar-ring: 217 91% 35%;
+    --sidebar-foreground: 215 35% 32%;
+    --sidebar-primary: 215 35% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 40% 96%;
+    --sidebar-accent-foreground: 215 35% 32%;
+    --sidebar-border: 215 35% 88%;
+    --sidebar-ring: 215 35% 32%;
   }
 
+  /* DARK MODE */
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 15%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 15%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 19% 27%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 19% 27%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 91% 60%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 19% 27%;
-    --input: 217 19% 27%;
-    --ring: 217 91% 60%;
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 217 19% 27%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 19% 27%;
-    --sidebar-ring: 217 91% 60%;
+    --background: 215 35% 12%;           /* Very dark blue */
+    --foreground: 0 0% 98%;              /* Off-white text */
+    
+    --card: 215 30% 16%;                 /* Slightly lighter than background */
+    --card-foreground: 0 0% 98%;         /* Light text */
+    
+    --popover: 215 30% 16%;
+    --popover-foreground: 0 0% 98%;
+    
+    --primary: 215 35% 50%;              /* Lighter blue for dark mode */
+    --primary-foreground: 0 0% 98%;      /* Light text on primary */
+    
+    --secondary: 215 30% 20%;            /* Dark gray-blue */
+    --secondary-foreground: 0 0% 98%;    /* Light text */
+    
+    --muted: 215 30% 20%;
+    --muted-foreground: 215 15% 65%;     /* Medium-light gray */
+    
+    --accent: 215 35% 50%;
+    --accent-foreground: 0 0% 98%;
+    
+    --destructive: 0 63% 31%;            /* Darker red for dark mode */
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 215 30% 24%;               /* Subtle borders */
+    --input: 215 30% 24%;
+    --ring: 215 35% 50%;
+    
+    --sidebar-background: 215 35% 12%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 215 35% 50%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 215 30% 20%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 215 30% 24%;
+    --sidebar-ring: 215 35% 50%;
   }
 }
 
+/* BASE STYLES - Typography and smooth rendering */
 @layer base {
   * {
     @apply border-border;
@@ -76,5 +110,91 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Improved heading hierarchy */
+  h1 {
+    @apply text-4xl font-bold tracking-tight;
+    letter-spacing: -0.02em;
+  }
+  
+  h2 {
+    @apply text-3xl font-semibold tracking-tight;
+    letter-spacing: -0.02em;
+  }
+  
+  h3 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+  
+  h4 {
+    @apply text-xl font-semibold;
+  }
+  
+  h5 {
+    @apply text-lg font-semibold;
+  }
+  
+  h6 {
+    @apply text-base font-semibold;
+  }
+  
+  /* Better paragraph spacing */
+  p {
+    @apply leading-relaxed;
+  }
+}
+
+/* CUSTOM UTILITIES - Motion through transitions and shadows */
+@layer utilities {
+  /* Soft shadow for subtle elevation */
+  .shadow-soft {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Card shadow with more depth */
+  .shadow-card {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Elevated shadow for modals */
+  .shadow-elevated {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Smooth transitions for motion */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Quick transitions for buttons */
+  .transition-quick {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Glass effect for modern overlays */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  /* Accent border for emphasis (suggests direction/flow) */
+  .border-accent-left {
+    border-left: 3px solid hsl(215, 35%, 32%);
+  }
+  
+  /* Hover lift effect - motion without gradients */
+  .hover-lift {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
   }
 }
