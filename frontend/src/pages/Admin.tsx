@@ -214,14 +214,21 @@ const handleAddAttorney = async () => {
       <div className="max-w-7xl mx-auto space-y-6">
        <div className="flex items-center justify-between">
   <div>
-    <Button 
-      variant="ghost" 
-      onClick={() => navigate("/home")}
-      className="mb-2 -ml-2"
-    >
-      <ArrowLeft className="h-4 w-4 mr-2" />
-      Back to Dashboard
-    </Button>
+  <Button 
+  variant="ghost" 
+  onClick={async () => {
+    const submissions = await api.getMySubmissions();
+    if (submissions && submissions.length > 0) {
+      navigate(`/status/${submissions[0].id}`);
+    } else {
+      navigate("/intake");
+    }
+  }}
+  className="mb-2 -ml-2"
+>
+  <ArrowLeft className="h-4 w-4 mr-2" />
+  Back to Submission
+</Button>
     <h1 className="text-4xl font-bold">Admin Portal</h1>
     <p className="text-muted-foreground mt-2">
       Manage estate settlement submissions and attorneys

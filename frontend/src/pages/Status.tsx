@@ -103,15 +103,7 @@ const Status = () => {
       <Header />
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 p-4 md:p-8">
         <div className="container mx-auto max-w-4xl">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/home")}
-            className="mb-6"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Return to Dashboard
-          </Button>
-
+         
           <div className="space-y-6">
             <Card className="border-primary/20 bg-gradient-to-br from-card to-primary/5">
               <CardHeader className="text-center pb-4">
