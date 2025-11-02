@@ -6,67 +6,88 @@ import Header from '@/components/Header';
 const Welcome = () => {
   const navigate = useNavigate();
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [displayedText, setDisplayedText] = useState('');
-  const [isTyping, setIsTyping] = useState(true);
+  const [displayedWords, setDisplayedWords] = useState<string[]>([]);
   const [showButton, setShowButton] = useState(false);
+  const [isSkipped, setIsSkipped] = useState(false);
 
   const messages = [
     "Welcome.",
     "We understand this is a difficult time.",
-    "We're here to guide you through the estate settlement process step by step.",
+    "Let us help you.",
+    "We will guide you through the estate settlement process step by step.",
     "Let's get started."
   ];
 
+  const handleSkip = () => {
+    setIsSkipped(true);
+    setShowButton(true);
+  };
+
   useEffect(() => {
-    if (currentMessageIndex >= messages.length) {
-      setShowButton(true);
+    if (isSkipped || currentMessageIndex >= messages.length) {
+      if (!isSkipped) setShowButton(true);
       return;
     }
 
     const currentMessage = messages[currentMessageIndex];
-    let charIndex = 0;
+    const words = currentMessage.split(' ');
+    let wordIndex = 0;
+    setDisplayedWords([]);
 
-    // Typing animation
-    const typingInterval = setInterval(() => {
-      if (charIndex < currentMessage.length) {
-        setDisplayedText(currentMessage.substring(0, charIndex + 1));
-        charIndex++;
+    // Word-by-word fade-in
+    const wordInterval = setInterval(() => {
+      if (wordIndex < words.length) {
+        setDisplayedWords(prev => [...prev, words[wordIndex]]);
+        wordIndex++;
       } else {
-        clearInterval(typingInterval);
-        setIsTyping(false);
+        clearInterval(wordInterval);
         
         // Pause, then fade out and move to next message
         setTimeout(() => {
-          setDisplayedText('');
-          setIsTyping(true);
+          setDisplayedWords([]);
           setCurrentMessageIndex(prev => prev + 1);
-        }, 1500); // Pause 1.5 seconds before fading
+        }, 1500);
       }
-    }, 60); // 60ms per character (slower typing)
+    }, 100); // 100ms per word
 
-    return () => clearInterval(typingInterval);
-  }, [currentMessageIndex]);
+    return () => clearInterval(wordInterval);
+  }, [currentMessageIndex, isSkipped]);
 
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4">
-        <div className="max-w-3xl w-full text-center space-y-8">
-          {/* Text Display */}
-          <div 
-            className={`min-h-[120px] flex items-center justify-center transition-opacity duration-700 ${
-              displayedText ? 'opacity-100' : 'opacity-0'
-            }`}
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4 relative">
+        {/* Skip Button */}
+        {!showButton && (
+          <button
+            onClick={handleSkip}
+            className="absolute top-24 right-8 text-muted-foreground hover:text-foreground transition-colors text-sm underline"
           >
-            <p className="text-4xl md:text-5xl font-light text-foreground leading-relaxed">
-              {displayedText}
-              {isTyping && displayedText && <span className="animate-pulse">|</span>}
-            </p>
-          </div>
+            Skip
+          </button>
+        )}
 
-          {/* Button appears after all messages */}
+        <div className="max-w-3xl w-full text-center">
+          {/* Text Display */}
+          {!isSkipped && (
+            <div className="min-h-[120px] flex items-center justify-center mb-8">
+              <p className="text-4xl md:text-5xl font-light text-foreground leading-relaxed">
+                {displayedWords.map((word, index) => (
+                  <span
+                    key={index}
+                    className="inline-block animate-fade-in-word mr-2"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    {word}
+                  </span>
+                ))}
+              </p>
+            </div>
+          )}
+
+          {/* Button appears after all messages or skip */}
           {showButton && (
-            <div className="flex justify-center animate-fade-in pt-8">
+            <div className="flex justify-center animate-fade-in">
               <Button 
                 size="lg"
                 onClick={() => navigate('/intake')}
