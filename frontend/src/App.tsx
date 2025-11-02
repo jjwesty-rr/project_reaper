@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
-import Index from "./pages/Index";
 import IntakeForm from "./pages/IntakeForm";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -19,15 +18,6 @@ const App = () => (
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
-      
-      <Route 
-        path="/home" 
-        element={
-          <ProtectedRoute>
-            <Index />
-          </ProtectedRoute>
-        } 
-      />
       
       <Route 
         path="/intake" 
