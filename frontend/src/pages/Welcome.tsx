@@ -71,13 +71,10 @@ const Welcome = () => {
           {/* Text Display */}
           {!isSkipped && (
             <div className="min-h-[120px] flex items-center justify-center mb-8">
-             <p className="text-4xl md:text-5xl font-light text-foreground leading-relaxed">
+          <p className="text-4xl md:text-5xl font-light text-foreground leading-relaxed">
   {displayedWords.map((word, index) => (
     <span key={index}>
-      <span
-        className="inline-block animate-fade-in-word"
-        style={{ animationDelay: `${index * 0.1}s` }}
-      >
+      <span className="inline-block animate-fade-in-word">
         {word}
       </span>
       {index < displayedWords.length - 1 && ' '}
