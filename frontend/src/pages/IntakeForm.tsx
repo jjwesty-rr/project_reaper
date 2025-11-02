@@ -40,6 +40,27 @@ const IntakeForm = () => {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+  // Prevent users from creating a 2nd submission
+  const checkExistingSubmission = async () => {
+    const editId = searchParams.get('edit');
+    // Only check if we're NOT in edit mode
+    if (!editId) {
+      try {
+        const submissions = await api.getMySubmissions();
+        if (submissions && submissions.length > 0) {
+          // User already has a submission, redirect to it
+          navigate(`/status/${submissions[0].id}`);
+          toast.info("You already have a submission. Edit it here.");
+        }
+      } catch (error) {
+        console.error('Error checking submissions:', error);
+      }
+    }
+  };
+  checkExistingSubmission();
+}, [searchParams, navigate]);
+
  const loadExistingSubmission = async (id: number) => {
   setLoading(true);
   try {

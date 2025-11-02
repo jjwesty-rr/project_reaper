@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,11 +32,19 @@ const Header = () => {
     <header className="border-b bg-background">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div 
-          className="text-2xl font-bold cursor-pointer" 
-          onClick={() => navigate("/home")}
-        >
-          Estate Guru Settlement
-        </div>
+  className="text-2xl font-bold cursor-pointer" 
+  onClick={async () => {
+    // Redirect to status page if they have a submission, otherwise intake
+    const submissions = await api.getMySubmissions();
+    if (submissions && submissions.length > 0) {
+      navigate(`/status/${submissions[0].id}`);
+    } else {
+      navigate("/intake");
+    }
+  }}
+>
+  Estate Guru Settlement
+</div>
 
         <div className="flex items-center gap-4">
           {isAdmin() && (

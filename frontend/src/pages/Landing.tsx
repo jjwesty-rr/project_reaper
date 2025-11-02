@@ -2,18 +2,39 @@ import { Button } from "@/components/ui/button";
 import { FileText, Shield, Clock, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";  
+import { api } from "@/integrations/supabase/client"; 
 
 const Landing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const handleGetStarted = () => {
-    if (user) {
-      navigate("/home");
-    } else {
-      navigate("/auth");
-    }
-  };
+  // Redirect logged-in users to their status page or intake
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      if (user) {
+        try {
+          const submissions = await api.getMySubmissions();
+          if (submissions && submissions.length > 0) {
+            navigate(`/status/${submissions[0].id}`);
+          } else {
+            navigate("/intake");
+          }
+        } catch (error) {
+          console.error("Error checking submissions:", error);
+        }
+      }
+    };
+    checkAndRedirect();
+  }, [user, navigate]);
+
+const handleGetStarted = () => {
+  // If not logged in, go to auth page
+  // (logged-in users will be redirected by useEffect above)
+  if (!user) {
+    navigate("/auth");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
@@ -21,10 +42,17 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <h2 className="text-2xl font-bold">Estate Guru Settlement</h2>
         {user ? (
-          <Button onClick={() => navigate("/home")}>
-            Go to Dashboard
-          </Button>
-        ) : (
+  <Button onClick={async () => {
+    const submissions = await api.getMySubmissions();
+    if (submissions && submissions.length > 0) {
+      navigate(`/status/${submissions[0].id}`);
+    } else {
+      navigate("/intake");
+    }
+  }}>
+    Go to My Submission
+  </Button>
+) : (
           <Button onClick={() => navigate("/auth")} variant="outline">
             <LogIn className="mr-2 h-4 w-4" />
             Login

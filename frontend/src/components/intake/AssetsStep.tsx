@@ -182,7 +182,7 @@ export const AssetsStep = ({ data, onNext, onBack, onSkipToReview }: AssetsStepP
               </RadioGroup>
             </div>
 
-            {data?.hasTrust && (
+            {data?.hasEstatePlan && (
               <div className="space-y-2">
                 <Label>Was this asset funded into the trust?</Label>
                 <RadioGroup

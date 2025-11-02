@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/integrations/supabase/client"; 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,18 +19,25 @@ const Auth = () => {
   const { toast } = useToast();
   const { login, register } = useAuth();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      await login(email, password);
-      toast({
-        title: "Welcome back!",
-        description: "Successfully logged in.",
-      });
-      navigate("/home");
-    } catch (error: any) {
+  try {
+    await login(email, password);
+    toast({
+      title: "Welcome back!",
+      description: "Successfully logged in.",
+    });
+    
+    // Check if user has a submission
+    const submissions = await api.getMySubmissions();
+    if (submissions && submissions.length > 0) {
+      navigate(`/status/${submissions[0].id}`);
+    } else {
+      navigate("/intake");
+    }
+  } catch (error: any) {
       toast({
         title: "Login Failed",
         description: error.message || "Invalid email or password",
@@ -40,18 +48,20 @@ const Auth = () => {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      await register(email, password, firstName, lastName);
-      toast({
-        title: "Account Created!",
-        description: "Welcome to Estate Guru Settlement.",
-      });
-      navigate("/home");
-    } catch (error: any) {
+  try {
+    await register(email, password, firstName, lastName);
+    toast({
+      title: "Account Created!",
+      description: "Welcome to Estate Guru Settlement.",
+    });
+    
+    // New users won't have a submission yet, send to intake
+    navigate("/intake");
+  } catch (error: any) {
       toast({
         title: "Registration Failed",
         description: error.message || "Could not create account",
