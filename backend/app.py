@@ -1,15 +1,18 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask import Flask, request, jsonify, send_from_directory  # Add send_from_directory
-from werkzeug.utils import secure_filename  # Add this new import
-from datetime import datetime
-import os
-import json
-
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_bcrypt import Bcrypt
+from werkzeug.utils import secure_filename
+from datetime import datetime
 from functools import wraps
+from dotenv import load_dotenv
+import os
+import json
+import openai
+
+load_dotenv()
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # Create Flask app
 app = Flask(__name__)
@@ -624,7 +627,7 @@ def migrate_db():
         return jsonify({'error': str(e)}), 500
     
 
-    
+
       # User Management (Super Admin Only)
 @app.route('/api/users', methods=['GET'])
 @super_admin_required

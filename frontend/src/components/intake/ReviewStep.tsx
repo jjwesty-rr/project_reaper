@@ -125,7 +125,7 @@ const handleSubmit = async () => {
     description: "Your changes have been saved.",
   });
   
-  navigate(`/status/${submissionId}`);
+  navigate(`/submission-complete/${submissionId}`);
 } else {
   // CREATE new submission
   response = await api.createSubmission(completeFormData);

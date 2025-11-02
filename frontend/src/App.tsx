@@ -6,6 +6,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import IntakeForm from "./pages/IntakeForm";
 import Auth from "./pages/Auth";
+import Welcome from "./pages/Welcome";
+import SubmissionComplete from "./pages/SubmissionComplete";
 import Profile from "./pages/Profile";
 import Status from "./pages/Status";
 import Admin from "./pages/Admin";
@@ -27,6 +29,24 @@ const App = () => (
           </ProtectedRoute>
         } 
       />
+
+      <Route 
+  path="/welcome" 
+  element={
+    <ProtectedRoute>
+      <Welcome />
+    </ProtectedRoute>
+  } 
+/>
+
+<Route 
+  path="/submission-complete/:id" 
+  element={
+    <ProtectedRoute>
+      <SubmissionComplete />
+    </ProtectedRoute>
+  } 
+/>
       
       <Route 
         path="/profile" 

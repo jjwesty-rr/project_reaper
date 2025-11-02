@@ -35,7 +35,7 @@ const handleLogin = async (e: React.FormEvent) => {
     if (submissions && submissions.length > 0) {
       navigate(`/status/${submissions[0].id}`);
     } else {
-      navigate("/intake");
+      navigate("/welcome");
     }
   } catch (error: any) {
       toast({
@@ -60,7 +60,7 @@ const handleRegister = async (e: React.FormEvent) => {
     });
     
     // New users won't have a submission yet, send to intake
-    navigate("/intake");
+    navigate("/welcome");
   } catch (error: any) {
       toast({
         title: "Registration Failed",
