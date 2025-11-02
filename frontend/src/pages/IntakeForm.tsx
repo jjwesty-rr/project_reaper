@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+import Header from "@/components/Header";
 import { FormProgress } from "@/components/intake/FormProgress";
 import { ContactInfoStep } from "@/components/intake/ContactInfoStep";
 import { DecedentInfoStep } from "@/components/intake/DecedentInfoStep";
@@ -267,7 +268,9 @@ case 7:
     }
   };
 
-  return (
+ return (
+  <>
+    <Header />
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
@@ -281,16 +284,6 @@ case 7:
           </p>
         </div>
 
-        <div className="mb-4">
-          <button
-            onClick={handleSaveAndGoBack}
-            className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-            disabled={loading}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Save and Go Back to Dashboard</span>
-          </button>
-        </div>
 
         <Card className="p-8">
           <FormProgress 
@@ -301,9 +294,10 @@ case 7:
           />
           {renderStep()}
         </Card>
-      </div>
+     </div>
     </div>
-  );
+  </>
+);
 };
 
 export default IntakeForm;
