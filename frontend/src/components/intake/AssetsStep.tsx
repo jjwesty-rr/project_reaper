@@ -37,19 +37,19 @@ export const AssetsStep = ({ data, onNext, onBack, onSkipToReview }: AssetsStepP
     data?.assetsInDomicileState !== undefined ? (data.assetsInDomicileState ? "yes" : "no") : undefined
   );
 
-  const addAsset = () => {
-    setAssets([
-      ...assets,
-      {
-        type: "bank_accounts",
-        description: "",
-        estimatedValue: 0,
-        ownership: undefined as any,
-        hasNamedBeneficiaries: undefined as any,
-        fundedIntoTrust: undefined as any,
-      },
-    ]);
-  };
+ const addAsset = () => {
+  setAssets([
+    ...assets,
+    {
+      type: "" as AssetType,
+      description: "",
+      estimatedValue: 0,
+      ownership: undefined as any,
+      hasNamedBeneficiaries: undefined as any,
+      fundedIntoTrust: undefined as any,
+    },
+  ]);
+};
 
   const removeAsset = (index: number) => {
     setAssets(assets.filter((_, i) => i !== index));
@@ -124,7 +124,7 @@ export const AssetsStep = ({ data, onNext, onBack, onSkipToReview }: AssetsStepP
                   onValueChange={(value) => updateAsset(index, { type: value as AssetType })}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select an asset type"/>
                   </SelectTrigger>
                   <SelectContent>
                     {ASSET_TYPES.map((type) => (
@@ -182,16 +182,16 @@ export const AssetsStep = ({ data, onNext, onBack, onSkipToReview }: AssetsStepP
               </RadioGroup>
             </div>
 
-            {data?.hasEstatePlan && (
-              <div className="space-y-2">
-                <Label>Was this asset funded into the trust?</Label>
-                <RadioGroup
-                  value={asset.fundedIntoTrust ? "yes" : "no"}
-                  onValueChange={(value) =>
-                    updateAsset(index, { fundedIntoTrust: value === "yes" })
-                  }
-                  className="flex gap-4"
-                >
+            {data?.hasEstatePlan && data?.estatePlanType === 'trust' && (
+  <div className="space-y-2">
+    <Label>Was this asset funded into the trust?</Label>
+    <RadioGroup
+      value={asset.fundedIntoTrust ? "yes" : "no"}
+      onValueChange={(value) =>
+        updateAsset(index, { fundedIntoTrust: value === "yes" })
+      }
+      className="flex gap-4"
+    >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="yes" id={`trust-yes-${index}`} />
                     <label htmlFor={`trust-yes-${index}`} className="cursor-pointer">
