@@ -48,7 +48,7 @@ useEffect(() => {
           ...prev,
           contactInfo: {
             ...prev.contactInfo,
-            name: `${user.first_name} ${user.last_name}`.trim(),
+           name: `${user.first_name.trim()} ${user.last_name.trim()}`.trim(),
             email: user.email,
             phone: prev.contactInfo?.phone || "",
             relationshipToDecedent: prev.contactInfo?.relationshipToDecedent || "",
