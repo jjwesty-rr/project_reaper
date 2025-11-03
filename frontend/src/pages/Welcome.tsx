@@ -35,7 +35,7 @@ const Welcome = () => {
 
 const messages = useMemo(() => [
   { text: userName ? `Welcome, ${userName}.` : "Welcome.", pause: 1500 },
-  { text: "We know this time isn't easy.", pause: 1500 },
+  { text: "We know there’s a lot on your shoulders right now.", pause: 1500 },
   { text: "We're here to lighten the load.", pause: 3000 }
 ], [userName]);
 
