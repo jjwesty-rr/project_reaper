@@ -15,8 +15,7 @@ const SubmissionComplete = () => {
   const messages = [
     { text: "Thank you.", pause: 1500 },
     { text: "We're reviewing your information.", pause: 2000 },
-    { text: "We'll connect you with an attorney who can help.", pause: 2500 },
-    { text: "You'll hear from us within 1-2 business days.", pause: 2000 }
+    { text: "We'll connect you with an attorney who can help. You'll hear from us within 1-2 business days.", pause: 3000 },
   ];
 
   const handleSkip = () => {

@@ -30,7 +30,7 @@ const Welcome = () => {
   const messages = [
     { text: "Welcome.", pause: 1500 },
     { text: "We know this time isn't easy.", pause: 1500 },
-    { text: "We're here to lighten the load.", pause: 3500 },
+    { text: "We're here to lighten the load.", pause: 3500 }
   ];
 
   const handleSkip = () => {
