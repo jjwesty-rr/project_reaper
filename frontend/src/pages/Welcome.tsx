@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
+import { api } from '@/integrations/supabase/client'; 
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -9,6 +10,22 @@ const Welcome = () => {
   const [showMessage, setShowMessage] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const [isSkipped, setIsSkipped] = useState(false);
+
+    useEffect(() => {
+    const checkExistingSubmission = async () => {
+      try {
+        const submissions = await api.getMySubmissions();
+        if (submissions && submissions.length > 0) {
+          // User has submission, skip animation and go to status
+          navigate(`/status/${submissions[0].id}`);
+        }
+      } catch (error) {
+        console.error('Error checking submissions:', error);
+      }
+    };
+    
+    checkExistingSubmission();
+  }, [navigate]);
 
   const messages = [
     { text: "Welcome.", pause: 1500 },

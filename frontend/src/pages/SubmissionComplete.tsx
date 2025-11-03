@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 
+
 const SubmissionComplete = () => {
   const navigate = useNavigate();
   const { id } = useParams();
