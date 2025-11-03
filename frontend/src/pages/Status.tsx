@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, Clock, FileText, ArrowLeft, Edit, Mail } from "lucide-react";
+import { CheckCircle2, Clock, FileText, ArrowLeft, Edit, Mail, Download, Sparkles } from "lucide-react";
 import Header from "@/components/Header";
 
 const Status = () => {
@@ -13,6 +13,8 @@ const Status = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [submission, setSubmission] = useState<any>(null);
+  const [summarizing, setSummarizing] = useState(false);
+  const [summary, setSummary] = useState<string>("");
 
   useEffect(() => {
     if (id) {
@@ -24,6 +26,9 @@ const Status = () => {
     try {
       const data = await api.getSubmission(Number(id));
       setSubmission(data);
+    if (data.document_summary) {
+  setSummary(data.document_summary);
+    }
     } catch (error: any) {
       console.error("Error fetching submission:", error);
       navigate("/");
@@ -95,6 +100,41 @@ const Status = () => {
   if (!submission) {
     return null;
   }
+
+
+  const handleSummarizeDocument = async () => {
+  if (!submission?.id) return;
+  
+  setSummarizing(true);
+  try {
+    const result = await api.summarizeDocument(submission.id);
+    setSummary(result.summary);
+  } catch (error: any) {
+    console.error("Error summarizing document:", error);
+    alert(error.message || "Failed to summarize document");
+  } finally {
+    setSummarizing(false);
+  }
+};
+
+const handleDownloadDocument = async () => {
+  if (!submission?.id) return;
+  
+  try {
+    const blob = await api.downloadDocument(submission.id);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = submission.trust_document_filename || 'document.pdf';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error: any) {
+    console.error("Error downloading document:", error);
+    alert("Failed to download document");
+  }
+};
 
   const nextSteps = getNextSteps(submission.referral_type);
 
@@ -174,6 +214,55 @@ const Status = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Document Card  */}
+            {submission.trust_document_filename && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Trust/Will Document
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Uploaded Document</p>
+                    <p className="font-medium">{submission.trust_document_filename}</p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleDownloadDocument}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleSummarizeDocument}
+                      disabled={summarizing}
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      {summarizing ? "Summarizing..." : summary ? "Regenerate Summary" : "Summarize Document"}
+                    </Button>
+                  </div>
+
+                  {summary && (
+                    <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-blue-600" />
+                        AI Document Summary
+                      </h4>
+                      <div className="prose prose-sm max-w-none text-sm whitespace-pre-wrap">
+                        {summary}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
 
             <Card>
               <CardHeader>

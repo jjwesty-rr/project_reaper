@@ -629,7 +629,26 @@ def migrate_db():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-
+@app.route('/api/add-document-summary-column', methods=['GET'])
+def add_document_summary_column():
+    """Manually add document_summary column"""
+    try:
+        # Check if column already exists
+        inspector = db.inspect(db.engine)
+        columns = [col['name'] for col in inspector.get_columns('submission')]
+        
+        if 'document_summary' in columns:
+            return jsonify({'message': 'Column already exists!'})
+        
+        # Add the column using raw SQL
+        with db.engine.connect() as conn:
+            conn.execute(db.text('ALTER TABLE submission ADD COLUMN document_summary TEXT'))
+            conn.commit()
+        
+        return jsonify({'message': 'document_summary column added successfully!'})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
       # User Management (Super Admin Only)
 @app.route('/api/users', methods=['GET'])
@@ -864,6 +883,86 @@ def download_document(submission_id):
     except Exception as e:
         print(f"Download error: {e}")
         return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/api/submissions/<int:id>/summarize-document', methods=['POST'])
+@login_required
+def summarize_document(id):
+    """Generate AI summary of uploaded document"""
+    import pdfplumber
+    
+    submission = Submission.query.get_or_404(id)
+    
+    # Security: users can only summarize their own documents, admins can summarize any
+    if submission.user_id != current_user.id and current_user.role not in ['admin', 'super_admin']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    # Check if document exists
+    if not submission.trust_document_path:
+        return jsonify({'error': 'No document uploaded'}), 404
+    
+    doc_path = os.path.join(app.config['UPLOAD_FOLDER'], submission.trust_document_path)
+    
+    if not os.path.exists(doc_path):
+        return jsonify({'error': 'Document file not found'}), 404
+    
+    try:
+        # Extract text from PDF
+        text = ""
+        with pdfplumber.open(doc_path) as pdf:
+            for page in pdf.pages[:15]:  # Limit to first 15 pages
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
+        
+        if not text.strip():
+            return jsonify({'error': 'Could not extract text from document'}), 400
+        
+        # Truncate to fit token limits (roughly 8000 characters = 2500 tokens)
+        text = text[:8000]
+        
+        prompt = f"""Analyze this estate planning document and provide a comprehensive summary.
+
+Document text:
+{text}
+
+Provide a structured summary with:
+1. **Document Type**: Identify if this is a Trust, Will, Codicil, etc.
+2. **Key Parties**: 
+   - Trustor/Testator (person who created the document)
+   - Trustees/Executors (who manages the estate)
+   - Beneficiaries (who receives assets)
+3. **Major Assets or Property**: List any significant assets, property, or accounts mentioned
+4. **Important Provisions**: Key instructions, conditions, or special arrangements
+5. **Distribution Plan**: How assets are to be distributed
+6. **Red Flags or Concerns**: Any potential issues, conflicts, unclear language, or items requiring attorney attention
+
+Format your response clearly with headers and bullet points where appropriate."""
+
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an expert estate planning document analyst. Provide clear, professional summaries that help attorneys and clients understand key document details."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=1000
+        )
+        
+        summary = response.choices[0].message.content
+        
+        # Save summary to database
+        submission.document_summary = summary
+        db.session.commit()
+        
+        return jsonify({
+            'summary': summary,
+            'success': True
+        })
+    
+    except Exception as e:
+        print(f"Error summarizing document: {e}")
+        return jsonify({'error': f'Failed to summarize document: {str(e)}'}), 500
     
 # ============= RUN THE APP =============
 if __name__ == '__main__':

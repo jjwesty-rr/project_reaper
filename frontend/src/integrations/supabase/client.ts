@@ -270,7 +270,20 @@ async uploadDocument(submissionId: number, file: File): Promise<void> {
   if (!response.ok) {
     throw new Error('Failed to upload document');
   }
-}
+}, 
+async summarizeDocument(submissionId: number): Promise<{ summary: string; success: boolean }> {
+  const response = await fetch(`${API_URL}/api/submissions/${submissionId}/summarize-document`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to summarize document');
+  }
+  
+  return response.json();
+},
 
 
 };
