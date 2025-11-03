@@ -890,6 +890,7 @@ def download_document(submission_id):
 def summarize_document(id):
     """Generate AI summary of uploaded document"""
     import pdfplumber
+    from openai import OpenAI
     
     submission = Submission.query.get_or_404(id)
     
@@ -939,7 +940,10 @@ Provide a structured summary with:
 
 Format your response clearly with headers and bullet points where appropriate."""
 
-        response = openai.ChatCompletion.create(
+        # Use new OpenAI client syntax
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are an expert estate planning document analyst. Provide clear, professional summaries that help attorneys and clients understand key document details."},
@@ -963,6 +967,7 @@ Format your response clearly with headers and bullet points where appropriate.""
     except Exception as e:
         print(f"Error summarizing document: {e}")
         return jsonify({'error': f'Failed to summarize document: {str(e)}'}), 500
+    
     
 # ============= RUN THE APP =============
 if __name__ == '__main__':
