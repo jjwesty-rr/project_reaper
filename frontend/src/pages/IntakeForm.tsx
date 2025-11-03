@@ -33,8 +33,6 @@ const IntakeForm = () => {
   const [formData, setFormData] = useState<IntakeFormData>({});
   const [submissionId, setSubmissionId] = useState<number | null>(null);
 
-const [submissionId, setSubmissionId] = useState<number | null>(null);
-
 // useEffect - Pre-fill contact info with logged-in user's data
 useEffect(() => {
   const loadUserData = async () => {
