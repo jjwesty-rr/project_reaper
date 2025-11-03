@@ -14,7 +14,7 @@ const Welcome = () => {
     { text: "Welcome.", pause: 1500 },
     { text: "We know this time isn't easy.", pause: 1500 },
     { text: "We're here to lighten the load.", pause: 3000 },
-    { text: "We'll help you take the first steps in settling your loved one's estate.", pause: 3000 },
+    { text: "We'll help you take the first steps in managing what your loved one left behind.", pause: 3000 },
     { text: "Let's take that first step together.", pause: 3500 }
   ];
 
@@ -56,8 +56,7 @@ const Welcome = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4 relative pt-32">
-        {/* Skip Button */}
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-start justify-center p-4 relative pt-24">  {/* Skip Button */}
         {!showButton && (
           <button
             onClick={handleSkip}
@@ -67,7 +66,7 @@ const Welcome = () => {
           </button>
         )}
 
-        <div className="max-w-4xl w-full text-center -mt-20">
+        <div className="max-w-4xl w-full text-center mt-8">
           {/* Text Display */}
           {!isSkipped && (
             <div 
