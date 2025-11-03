@@ -6,16 +6,16 @@ import Header from '@/components/Header';
 const Welcome = () => {
   const navigate = useNavigate();
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [displayedWords, setDisplayedWords] = useState<string[]>([]);
+  const [showMessage, setShowMessage] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const [isSkipped, setIsSkipped] = useState(false);
 
   const messages = [
     "Welcome.",
-    "We understand this is a difficult time.",
-    "Let us help you.",
-    "We will guide you through the estate settlement process step by step.",
-    "Let's get started."
+    "We know this time isn't easy.",
+    "We're here to lighten the load.",
+    "We'll help you take the first steps in settling your loved one's estate.",
+    "Let's take that first step together."
   ];
 
   const handleSkip = () => {
@@ -31,27 +31,23 @@ const Welcome = () => {
 
     const currentMessage = messages[currentMessageIndex];
     const words = currentMessage.split(' ');
-    let wordIndex = 0;
-    setDisplayedWords([]);
+    const totalDuration = words.length * 150 + 1500; // 150ms per word + 1500ms pause
 
-    // Word-by-word fade-in
-    const wordInterval = setInterval(() => {
-      if (wordIndex < words.length) {
-        setDisplayedWords(prev => [...prev, words[wordIndex]]);
-        wordIndex++;
-      } else {
-        clearInterval(wordInterval);
-        
-        // Pause, then fade out and move to next message
-        setTimeout(() => {
-          setDisplayedWords([]);
-          setCurrentMessageIndex(prev => prev + 1);
-        }, 1500);
-      }
-    }, 100); // 100ms per word
+    setShowMessage(true);
 
-    return () => clearInterval(wordInterval);
+    const timer = setTimeout(() => {
+      setShowMessage(false);
+      setTimeout(() => {
+        setCurrentMessageIndex(prev => prev + 1);
+      }, 700); // Fade out duration
+    }, totalDuration);
+
+    return () => clearTimeout(timer);
   }, [currentMessageIndex, isSkipped]);
+
+  const currentWords = currentMessageIndex < messages.length 
+    ? messages[currentMessageIndex].split(' ') 
+    : [];
 
   return (
     <>
@@ -67,26 +63,38 @@ const Welcome = () => {
           </button>
         )}
 
-        <div className="max-w-3xl w-full text-center">
+        <div className="max-w-4xl w-full text-center">
           {/* Text Display */}
           {!isSkipped && (
-            <div className="min-h-[120px] flex items-center justify-center mb-8">
-          <p className="text-4xl md:text-5xl font-light text-foreground leading-relaxed">
-  {displayedWords.map((word, index) => (
-    <span key={index}>
-      <span className="inline-block animate-fade-in-word">
-        {word}
-      </span>
-      {index < displayedWords.length - 1 && ' '}
-    </span>
-  ))}
-</p>
+            <div 
+              className={`min-h-[120px] flex items-center justify-center mb-8 transition-opacity duration-700 ${
+                showMessage ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <p className="text-4xl md:text-5xl font-light text-foreground leading-relaxed">
+                {currentWords.map((word, index) => (
+                  <span
+                    key={index}
+                    className="inline-block opacity-0 animate-word-appear"
+                    style={{ 
+                      animationDelay: `${index * 0.15}s`,
+                      animationFillMode: 'forwards'
+                    }}
+                  >
+                    {word}
+                    {index < currentWords.length - 1 && '\u00A0'}
+                  </span>
+                ))}
+              </p>
             </div>
           )}
 
-          {/* Button appears after all messages or skip */}
+          {/* Description and Button appear after all messages or skip */}
           {showButton && (
-            <div className="flex justify-center animate-fade-in">
+            <div className="flex flex-col items-center space-y-6 animate-fade-in">
+              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed px-4">
+                Start by answering a few simple questions. Your answers help us understand your needs so we can match you with an attorney who will guide you through the rest of the process.
+              </p>
               <Button 
                 size="lg"
                 onClick={() => navigate('/intake')}
