@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import { api } from '@/integrations/supabase/client'; 
+
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -10,28 +11,33 @@ const Welcome = () => {
   const [showMessage, setShowMessage] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const [isSkipped, setIsSkipped] = useState(false);
+  const [userName, setUserName] = useState("");
 
-    useEffect(() => {
-    const checkExistingSubmission = async () => {
-      try {
-        const submissions = await api.getMySubmissions();
-        if (submissions && submissions.length > 0) {
-          // User has submission, skip animation and go to status
-          navigate(`/status/${submissions[0].id}`);
-        }
-      } catch (error) {
-        console.error('Error checking submissions:', error);
+  useEffect(() => {
+  const checkExistingSubmission = async () => {
+    try {
+      const user = await api.getCurrentUser();
+      if (user) {
+        setUserName(user.first_name); // Store first name
       }
-    };
-    
-    checkExistingSubmission();
-  }, [navigate]);
+      
+      const submissions = await api.getMySubmissions();
+      if (submissions && submissions.length > 0) {
+        navigate(`/status/${submissions[0].id}`);
+      }
+    } catch (error) {
+      console.error('Error checking submissions:', error);
+    }
+  };
+  
+  checkExistingSubmission();
+}, [navigate]);
 
-  const messages = [
-    { text: "Welcome.", pause: 1500 },
-    { text: "We know this time isn't easy.", pause: 1500 },
-    { text: "We're here to lighten the load.", pause: 3500 }
-  ];
+const messages = useMemo(() => [
+  { text: userName ? `Welcome, ${userName}.` : "Welcome.", pause: 1500 },
+  { text: "We know this time isn't easy.", pause: 1500 },
+  { text: "We're here to lighten the load.", pause: 3000 }
+], [userName]);
 
   const handleSkip = () => {
     setIsSkipped(true);

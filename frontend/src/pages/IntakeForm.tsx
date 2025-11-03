@@ -33,6 +33,33 @@ const IntakeForm = () => {
   const [formData, setFormData] = useState<IntakeFormData>({});
   const [submissionId, setSubmissionId] = useState<number | null>(null);
 
+const [submissionId, setSubmissionId] = useState<number | null>(null);
+
+// useEffect - Pre-fill contact info with logged-in user's data
+useEffect(() => {
+  const loadUserData = async () => {
+    try {
+      const user = await api.getCurrentUser();
+      if (user && !submissionId) { // Only pre-fill for NEW submissions
+        setFormData(prev => ({
+          ...prev,
+          contactInfo: {
+            ...prev.contactInfo,
+            name: `${user.first_name} ${user.last_name}`.trim(),
+            email: user.email,
+            phone: prev.contactInfo?.phone || "",
+            relationshipToDecedent: prev.contactInfo?.relationshipToDecedent || "",
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+  
+  loadUserData();
+}, [submissionId]);
+
   useEffect(() => {
     // Check if we're in edit mode
     const editId = searchParams.get('edit');
