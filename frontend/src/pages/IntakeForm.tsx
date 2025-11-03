@@ -37,8 +37,13 @@ const IntakeForm = () => {
 useEffect(() => {
   const loadUserData = async () => {
     try {
+      console.log('🔍 Attempting to load user data for pre-fill...');
       const user = await api.getCurrentUser();
-      if (user && !submissionId) { // Only pre-fill for NEW submissions
+      console.log('👤 User data:', user);
+      console.log('📋 Current submissionId:', submissionId);
+      
+      if (user && !submissionId) {
+        console.log('✅ Pre-filling with:', user.first_name, user.last_name, user.email);
         setFormData(prev => ({
           ...prev,
           contactInfo: {
@@ -49,6 +54,8 @@ useEffect(() => {
             relationshipToDecedent: prev.contactInfo?.relationshipToDecedent || "",
           }
         }));
+      } else {
+        console.log('❌ Not pre-filling. User:', !!user, 'No submissionId:', !submissionId);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
