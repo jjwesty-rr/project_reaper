@@ -142,7 +142,7 @@ const handleSubmit = async () => {
 
   // Store submission ID in localStorage
   localStorage.setItem('lastSubmissionId', response.submission_id.toString());
-  navigate(`/status/${response.submission_id}`);
+ navigate(`/submission-complete/${response.submission_id}`);  // ✅ Show animation for new submissions
 }
   } catch (error: any) {
     console.error("Error submitting form:", error);
