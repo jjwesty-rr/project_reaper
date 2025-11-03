@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 import os
 import json
 import openai
+import boto3
+from botocore.exceptions import ClientError
 
 load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -20,7 +22,19 @@ app = Flask(__name__)
 # File upload configuration
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 ALLOWED_EXTENSIONS = {'pdf'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# S3 Configuration
+S3_BUCKET = os.getenv('S3_BUCKET_NAME', 'test-estate-guru-settlement')
+S3_REGION = os.getenv('S3_REGION', 'us-east-1')  # Change to your region
+AWS_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+# Initialize S3 client
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=AWS_ACCESS_KEY,
+    aws_secret_access_key=AWS_SECRET_KEY,
+    region_name=S3_REGION
+)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Create uploads directory if it doesn't exist
@@ -816,80 +830,99 @@ def delete_state_limit(limit_id):
 @app.route('/api/upload-document/<int:submission_id>', methods=['POST'])
 @login_required
 def upload_document(submission_id):
-    """Upload a trust/will document for a submission"""
+    """Upload document to S3"""
+    submission = Submission.query.get_or_404(submission_id)
+    
+    # Security check
+    if submission.user_id != current_user.id and current_user.role not in ['admin', 'super_admin']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    if not file.filename.lower().endswith('.pdf'):
+        return jsonify({'error': 'Only PDF files are allowed'}), 400
+    
     try:
-        submission = Submission.query.get_or_404(submission_id)
+        # Generate unique filename
+        filename = secure_filename(file.filename)
+        unique_filename = f"{submission_id}_{datetime.utcnow().timestamp()}_{filename}"
+        s3_key = f"documents/{unique_filename}"
         
-        # Check permissions: user must own the submission or be admin
-        if not current_user.is_admin() and submission.user_id != current_user.id:
-            return jsonify({'error': 'Permission denied'}), 403
+        # Upload to S3
+        s3_client.upload_fileobj(
+            file,
+            S3_BUCKET,
+            s3_key,
+            ExtraArgs={
+                'ContentType': 'application/pdf',
+                'ServerSideEncryption': 'AES256'  # Encrypt at rest
+            }
+        )
         
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file provided'}), 400
-        
-        file = request.files['file']
-        
-        if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
-        
-        if not allowed_file(file.filename):
-            return jsonify({'error': 'Only PDF files are allowed'}), 400
-        
-        # Create unique filename: submission_id_timestamp_originalname.pdf
-        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
-        original_filename = secure_filename(file.filename)
-        filename = f"submission_{submission_id}_{timestamp}_{original_filename}"
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        
-        # Save file
-        file.save(filepath)
-        
-        # Update submission record
-        submission.trust_document_path = filename
-        submission.trust_document_filename = original_filename
+        # Update database with S3 path
+        submission.trust_document_path = s3_key
+        submission.trust_document_filename = filename
         db.session.commit()
         
         return jsonify({
             'message': 'Document uploaded successfully',
-            'filename': original_filename
-        }), 200
-        
+            'filename': filename
+        })
+    
+    except ClientError as e:
+        print(f"S3 upload error: {e}")
+        return jsonify({'error': 'Failed to upload document'}), 500
     except Exception as e:
         print(f"Upload error: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Failed to upload document'}), 500
 
 
 @app.route('/api/download-document/<int:submission_id>', methods=['GET'])
 @login_required
 def download_document(submission_id):
-    """Download a trust/will document"""
+    """Download document from S3"""
+    submission = Submission.query.get_or_404(submission_id)
+    
+    # Security check
+    if submission.user_id != current_user.id and current_user.role not in ['admin', 'super_admin']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    if not submission.trust_document_path:
+        return jsonify({'error': 'No document found'}), 404
+    
     try:
-        submission = Submission.query.get_or_404(submission_id)
-        
-        # Check permissions
-        if not current_user.is_admin() and submission.user_id != current_user.id:
-            return jsonify({'error': 'Permission denied'}), 403
-        
-        if not submission.trust_document_path:
-            return jsonify({'error': 'No document uploaded for this submission'}), 404
-        
-        return send_from_directory(
-            app.config['UPLOAD_FOLDER'],
-            submission.trust_document_path,
-            as_attachment=True,
-            download_name=submission.trust_document_filename or 'document.pdf'
+        # Generate presigned URL (valid for 1 hour)
+        url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': S3_BUCKET,
+                'Key': submission.trust_document_path
+            },
+            ExpiresIn=3600  # 1 hour
         )
         
-    except Exception as e:
-        print(f"Download error: {e}")
-        return jsonify({'error': str(e)}), 500
+        # Redirect to presigned URL
+        from flask import redirect
+        return redirect(url)
     
+    except ClientError as e:
+        print(f"S3 download error: {e}")
+        return jsonify({'error': 'Failed to download document'}), 500
+
+
 
 @app.route('/api/submissions/<int:id>/summarize-document', methods=['POST'])
 @login_required
 def summarize_document(id):
     """Generate AI summary of uploaded document"""
     import pdfplumber
+    import io
     from openai import OpenAI
     
     submission = Submission.query.get_or_404(id)
@@ -902,15 +935,19 @@ def summarize_document(id):
     if not submission.trust_document_path:
         return jsonify({'error': 'No document uploaded'}), 404
     
-    doc_path = os.path.join(app.config['UPLOAD_FOLDER'], submission.trust_document_path)
-    
-    if not os.path.exists(doc_path):
-        return jsonify({'error': 'Document file not found'}), 404
-    
     try:
+        # Download file from S3 to memory
+        s3_object = s3_client.get_object(
+            Bucket=S3_BUCKET,
+            Key=submission.trust_document_path
+        )
+        
+        pdf_bytes = s3_object['Body'].read()
+        pdf_file = io.BytesIO(pdf_bytes)
+        
         # Extract text from PDF
         text = ""
-        with pdfplumber.open(doc_path) as pdf:
+        with pdfplumber.open(pdf_file) as pdf:
             for page in pdf.pages[:15]:  # Limit to first 15 pages
                 page_text = page.extract_text()
                 if page_text:
@@ -967,8 +1004,7 @@ Format your response clearly with headers and bullet points where appropriate.""
     except Exception as e:
         print(f"Error summarizing document: {e}")
         return jsonify({'error': f'Failed to summarize document: {str(e)}'}), 500
-    
-    
+
 # ============= RUN THE APP =============
 if __name__ == '__main__':
     # Create database tables if they don't exist
