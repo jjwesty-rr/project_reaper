@@ -494,7 +494,7 @@ def update_submission(submission_id):
             
             # Store complete form data
             submission.form_data = json.dumps(data)
-        
+
         # Admin updates (always allowed)
         if 'status' in data:
             submission.status = data['status']
@@ -504,6 +504,16 @@ def update_submission(submission_id):
         
         if 'notes' in data:
             submission.notes = data['notes']
+        
+        # Document updates (ADD THIS SECTION)
+        if 'trust_document_path' in data:
+            submission.trust_document_path = data['trust_document_path']
+        
+        if 'trust_document_filename' in data:
+            submission.trust_document_filename = data['trust_document_filename']
+        
+        if 'document_summary' in data:
+            submission.document_summary = data['document_summary']
         
         db.session.commit()
         
