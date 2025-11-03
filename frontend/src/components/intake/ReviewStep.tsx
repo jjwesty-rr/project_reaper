@@ -9,6 +9,15 @@ import { determineReferralType } from "@/lib/intakeLogic";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/integrations/supabase/client"; // Now using our Flask API
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface ReviewStepProps {
   data: IntakeFormData;
@@ -45,6 +54,7 @@ export const ReviewStep = ({ data, onBack, submissionId }: ReviewStepProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [referralType, setReferralType] = useState<IntakeFormData['referralType']>(null);
   const [loading, setLoading] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     const loadReferralType = async () => {
@@ -69,7 +79,8 @@ export const ReviewStep = ({ data, onBack, submissionId }: ReviewStepProps) => {
 
   const referralInfo = REFERRAL_TYPE_INFO[referralType];
 
-const handleSubmit = async () => {
+const handleActualSubmit = async () => {
+  setShowPaymentModal(false); // Close modal
   setSubmitting(true);
   try {
     // Flat fields for backend database columns
@@ -276,10 +287,80 @@ const handleSubmit = async () => {
         <Button type="button" variant="outline" onClick={onBack} disabled={submitting}>
           Back
         </Button>
-        <Button onClick={handleSubmit} size="lg" disabled={submitting}>
-          {submitting ? "Submitting..." : "Submit Form"}
+        <Button onClick={() => setShowPaymentModal(true)} size="lg" disabled={submitting}>
+        {submitting ? "Submitting..." : "Submit Form"}
         </Button>
       </div>
+      
+{/* Payment Modal */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Payment Information</DialogTitle>
+            <DialogDescription>
+              Complete your payment to submit your estate settlement intake form.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="card-number">Card Number</Label>
+              <Input 
+                id="card-number" 
+                placeholder="1234 5678 9012 3456"
+                disabled
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="expiry">Expiry Date</Label>
+                <Input 
+                  id="expiry" 
+                  placeholder="MM/YY"
+                  disabled
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cvc">CVC</Label>
+                <Input 
+                  id="cvc" 
+                  placeholder="123"
+                  disabled
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="name">Name on Card</Label>
+              <Input 
+                id="name" 
+                placeholder="John Doe"
+                disabled
+              />
+            </div>
+            
+            <div className="pt-4 space-y-2">
+              <Button 
+                onClick={handleActualSubmit} 
+                className="w-full"
+                disabled={submitting}
+              >
+                {submitting ? "Processing..." : "Pay $299"}
+              </Button>
+              
+              <Button 
+                onClick={handleActualSubmit}
+                variant="outline" 
+                className="w-full"
+                disabled={submitting}
+              >
+                Skip Payment (Demo)
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
