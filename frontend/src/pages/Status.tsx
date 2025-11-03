@@ -253,25 +253,34 @@ const handleDownloadDocument = async () => {
     {summarizing ? "Summarizing..." : summary ? "Regenerate Summary" : "Summarize Document"}
   </Button>
   <Button
-    variant="destructive"
-    onClick={async () => {
-      if (confirm('Are you sure you want to remove this document?')) {
-        try {
-          await api.updateSubmission(submission.id, {
-            trust_document_path: null,
-            trust_document_filename: null,
-            document_summary: null
-          });
-          window.location.reload(); // Refresh page
-        } catch (error) {
-          alert('Failed to remove document');
-        }
+  variant="destructive"
+  onClick={async () => {
+    console.log('Remove button clicked');
+    console.log('Submission ID:', submission?.id);
+    
+    if (confirm('Are you sure you want to remove this document?')) {
+      console.log('User confirmed removal');
+      try {
+        console.log('Calling api.updateSubmission...');
+        const result = await api.updateSubmission(submission.id, {
+          trust_document_path: null,
+          trust_document_filename: null,
+          document_summary: null
+        });
+        console.log('Update successful:', result);
+        window.location.reload(); // Refresh page
+      } catch (error) {
+        console.error('Update failed:', error);
+        alert('Failed to remove document');
       }
-    }}
-  >
-    <Trash className="mr-2 h-4 w-4" />
-    Remove
-  </Button>
+    } else {
+      console.log('User cancelled removal');
+    }
+  }}
+>
+  <Trash className="mr-2 h-4 w-4" />
+  Remove
+</Button>
 </div>
 
                   {summary && (
