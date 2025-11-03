@@ -11,11 +11,11 @@ const Welcome = () => {
   const [isSkipped, setIsSkipped] = useState(false);
 
   const messages = [
-    "Welcome.",
-    "We know this time isn't easy.",
-    "We're here to lighten the load.",
-    "We'll help you take the first steps in settling your loved one's estate.",
-    "Let's take that first step together."
+    { text: "Welcome.", pause: 1500 },
+    { text: "We know this time isn't easy.", pause: 1500 },
+    { text: "We're here to lighten the load.", pause: 3000 },
+    { text: "We'll help you take the first steps in settling your loved one's estate.", pause: 3000 },
+    { text: "Let's take that first step together.", pause: 3500 }
   ];
 
   const handleSkip = () => {
@@ -30,10 +30,14 @@ const Welcome = () => {
     }
 
     const currentMessage = messages[currentMessageIndex];
-    const words = currentMessage.split(' ');
-    const totalDuration = words.length * 150 + 1500; // 150ms per word + 1500ms pause
+    const words = currentMessage.text.split(' ');
+    const animationDuration = words.length * 150; // 150ms per word
+    const totalDuration = animationDuration + currentMessage.pause;
 
-    setShowMessage(true);
+    // Small delay before showing message to ensure clean slate
+    setTimeout(() => {
+      setShowMessage(true);
+    }, 50);
 
     const timer = setTimeout(() => {
       setShowMessage(false);
@@ -46,13 +50,13 @@ const Welcome = () => {
   }, [currentMessageIndex, isSkipped]);
 
   const currentWords = currentMessageIndex < messages.length 
-    ? messages[currentMessageIndex].split(' ') 
+    ? messages[currentMessageIndex].text.split(' ') 
     : [];
 
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4 relative">
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4 relative pt-32">
         {/* Skip Button */}
         {!showButton && (
           <button
@@ -63,7 +67,7 @@ const Welcome = () => {
           </button>
         )}
 
-        <div className="max-w-4xl w-full text-center">
+        <div className="max-w-4xl w-full text-center -mt-20">
           {/* Text Display */}
           {!isSkipped && (
             <div 
@@ -74,7 +78,7 @@ const Welcome = () => {
               <p className="text-4xl md:text-5xl font-light text-foreground leading-relaxed">
                 {currentWords.map((word, index) => (
                   <span
-                    key={index}
+                    key={`${currentMessageIndex}-${index}`}
                     className="inline-block opacity-0 animate-word-appear"
                     style={{ 
                       animationDelay: `${index * 0.15}s`,
