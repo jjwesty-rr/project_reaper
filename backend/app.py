@@ -183,6 +183,9 @@ class Submission(db.Model):
     
     # Complete Form Data (JSON)
     form_data = db.Column(db.Text, nullable=True)  # Stores ALL form data as JSON string
+
+    #Doc Summary
+    document_summary = db.Column(db.Text, nullable=True)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
