@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, Clock, FileText, ArrowLeft, Edit, Mail, Download, Sparkles } from "lucide-react";
+import { CheckCircle2, Clock, FileText, ArrowLeft, Edit, Mail, Download, Sparkles, Trash } from "lucide-react";
 import Header from "@/components/Header";
 
 const Status = () => {
@@ -236,23 +236,43 @@ const handleDownloadDocument = async () => {
                     <p className="font-medium">{submission.document_filename}</p>
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={handleDownloadDocument}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleSummarizeDocument}
-                      disabled={summarizing}
-                    >
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      {summarizing ? "Summarizing..." : summary ? "Regenerate Summary" : "Summarize Document"}
-                    </Button>
-                  </div>
+                 <div className="flex gap-2">
+  <Button
+    variant="outline"
+    onClick={handleDownloadDocument}
+  >
+    <Download className="mr-2 h-4 w-4" />
+    Download
+  </Button>
+  <Button
+    variant="outline"
+    onClick={handleSummarizeDocument}
+    disabled={summarizing}
+  >
+    <Sparkles className="mr-2 h-4 w-4" />
+    {summarizing ? "Summarizing..." : summary ? "Regenerate Summary" : "Summarize Document"}
+  </Button>
+  <Button
+    variant="destructive"
+    onClick={async () => {
+      if (confirm('Are you sure you want to remove this document?')) {
+        try {
+          await api.updateSubmission(submission.id, {
+            trust_document_path: null,
+            trust_document_filename: null,
+            document_summary: null
+          });
+          window.location.reload(); // Refresh page
+        } catch (error) {
+          alert('Failed to remove document');
+        }
+      }
+    }}
+  >
+    <Trash className="mr-2 h-4 w-4" />
+    Remove
+  </Button>
+</div>
 
                   {summary && (
                     <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
