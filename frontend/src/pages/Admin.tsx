@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Shield, Users, Briefcase, ArrowLeft, Eye, UserPlus, Edit, DollarSign, FileText, Download } from 'lucide-react';
+import { Shield, Users, Briefcase, ArrowLeft, Eye, UserPlus, Edit, DollarSign, FileText, Download, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
 import { AdminManagement } from '@/components/admin/AdminManagement';  
@@ -31,6 +31,7 @@ interface Submission {
   notes?: string;
   has_document?: boolean;      
   document_filename?: string; 
+  document_summary?: string;
   created_at: string;
 }
 
@@ -48,15 +49,15 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [attorneys, setAttorneys] = useState<Attorney[]>([]);
-  
-  // Edit dialog state
+    // Edit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingSubmission, setEditingSubmission] = useState<Submission | null>(null);
+  const [summarizing, setSummarizing] = useState(false);
+  const [documentSummary, setDocumentSummary] = useState<string>("");
   const [selectedAttorneyId, setSelectedAttorneyId] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [saving, setSaving] = useState(false);
-  // ADD THESE NEW LINES:
   const [addAttorneyDialogOpen, setAddAttorneyDialogOpen] = useState(false);
   const [newAttorney, setNewAttorney] = useState({
     first_name: '',
@@ -88,13 +89,19 @@ export default function Admin() {
     }
   };
 
-  const openEditDialog = (submission: Submission) => {
-    setEditingSubmission(submission);
-    setSelectedAttorneyId(submission.attorney_id?.toString() || '');
-    setSelectedStatus(submission.status);
-    setNotes(submission.notes || '');
-    setEditDialogOpen(true);
-  };
+const openEditDialog = (submission: Submission) => {
+  setEditingSubmission(submission);
+  setSelectedAttorneyId(submission.attorney_id?.toString() || '');
+  setSelectedStatus(submission.status);
+  setNotes(submission.notes || '');
+  // Load existing summary if available
+  if (submission.document_summary) {
+    setDocumentSummary(submission.document_summary);
+  } else {
+    setDocumentSummary("");
+  }
+  setEditDialogOpen(true);
+};
 
   const handleSaveChanges = async () => {
     if (!editingSubmission) return;
@@ -497,12 +504,16 @@ const handleAddAttorney = async () => {
                 </div>
                 <div>
   <p className="text-sm font-medium mb-1">Estate Plan Document</p>
-  {editingSubmission.has_document ? (
+{editingSubmission.has_document ? (
+  <div className="space-y-3">
     <div className="flex items-center gap-2">
       <FileText className="h-4 w-4 text-primary" />
       <span className="text-sm text-muted-foreground">
         {editingSubmission.document_filename}
       </span>
+    </div>
+    
+    <div className="flex gap-2">
       <Button
         variant="outline"
         size="sm"
@@ -527,10 +538,45 @@ const handleAddAttorney = async () => {
         <Download className="h-4 w-4 mr-1" />
         Download
       </Button>
+      
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={async () => {
+          setSummarizing(true);
+          try {
+            const result = await api.summarizeDocument(editingSubmission.id);
+            setDocumentSummary(result.summary);
+            toast.success('Document summarized successfully');
+          } catch (error: any) {
+            console.error('Summarize error:', error);
+            toast.error(error.message || 'Failed to summarize document');
+          } finally {
+            setSummarizing(false);
+          }
+        }}
+        disabled={summarizing}
+      >
+        <Sparkles className="h-4 w-4 mr-1" />
+        {summarizing ? "Summarizing..." : documentSummary ? "Regenerate" : "Summarize"}
+      </Button>
     </div>
-  ) : (
-    <p className="text-sm text-muted-foreground">No document uploaded</p>
-  )}
+
+    {documentSummary && (
+      <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+        <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm">
+          <Sparkles className="h-4 w-4 text-blue-600" />
+          AI Document Summary
+        </h4>
+        <div className="prose prose-sm max-w-none text-xs whitespace-pre-wrap">
+          {documentSummary}
+        </div>
+      </div>
+    )}
+  </div>
+) : (
+  <p className="text-sm text-muted-foreground">No document uploaded</p>
+)}
 </div>
               </div>
 
