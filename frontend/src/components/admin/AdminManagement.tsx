@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Shield, Edit, UserPlus } from 'lucide-react';
+import { Shield, Edit, UserPlus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface User {
@@ -84,6 +84,36 @@ const [newUser, setNewUser] = useState({
     toast.error('Please fill in all required fields');
     return;
   }
+
+
+  const handleDeleteUser = async (user: any) => {
+  // Confirmation dialog
+  const confirmed = window.confirm(
+    `Are you sure you want to delete ${user.first_name} ${user.last_name}?\n\n` +
+    `This will permanently delete:\n` +
+    `- Their account\n` +
+    `- All their submissions\n\n` +
+    `This action cannot be undone.`
+  );
+  
+  if (!confirmed) return;
+  
+  try {
+    await api.deleteUser(user.id);
+    toast({
+      title: "User Deleted",
+      description: `${user.first_name} ${user.last_name} has been deleted.`,
+    });
+    // Refresh the users list
+    loadUsers();
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Failed to delete user",
+      variant: "destructive",
+    });
+  }
+};
 
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -206,16 +236,27 @@ const [newUser, setNewUser] = useState({
                     <TableCell className="text-sm text-muted-foreground">
                       {formatDate(user.created_at)}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEditDialog(user)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Change Role
-                      </Button>
-                    </TableCell>
+                   <TableCell className="text-right">
+  <div className="flex gap-2 justify-end">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => openEditDialog(user)}
+    >
+      <Edit className="h-4 w-4 mr-2" />
+      Change Role
+    </Button>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => handleDeleteUser(user)}
+      className="text-destructive hover:text-destructive"
+    >
+      <Trash2 className="h-4 w-4 mr-2" />
+      Delete
+    </Button>
+  </div>
+</TableCell>
                   </TableRow>
                 ))
               )}

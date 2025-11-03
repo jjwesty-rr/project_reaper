@@ -612,6 +612,41 @@ def get_current_user():
     }), 200
 
 
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@login_required
+def delete_user(user_id):
+    """Delete a user and their submissions (super admin only)"""
+    # Only super admins can delete users
+    if current_user.role != 'super_admin':
+        return jsonify({'error': 'Unauthorized - Super admin access required'}), 403
+    
+    # Prevent deleting yourself
+    if user_id == current_user.id:
+        return jsonify({'error': 'Cannot delete your own account'}), 400
+    
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Check if this is the last super admin
+        if user.role == 'super_admin':
+            super_admin_count = User.query.filter_by(role='super_admin').count()
+            if super_admin_count <= 1:
+                return jsonify({'error': 'Cannot delete the last super admin'}), 400
+        
+        # Delete user's submissions first
+        Submission.query.filter_by(user_id=user_id).delete()
+        
+        # Delete the user
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({'message': 'User and their submissions deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    
+    
     # Initialize database tables (one-time setup)
 @app.route('/api/init-db', methods=['GET'])
 def init_db():

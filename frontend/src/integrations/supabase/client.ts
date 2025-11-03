@@ -195,6 +195,21 @@ async getMySubmissions() {
     if (!response.ok) throw new Error('Failed to update user role');
     return response.json();
   },
+
+
+  async deleteUser(userId: number) {
+  const response = await fetch(`${API_URL}/api/users/${userId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to delete user');
+  }
+  return response.json();
+},
+
+
 // State Limits Management (Admin Only)
 async getStateLimits() {
   const response = await fetch(`${API_URL}/api/state-limits`, {
