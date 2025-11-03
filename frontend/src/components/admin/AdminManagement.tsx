@@ -85,36 +85,6 @@ const [newUser, setNewUser] = useState({
     return;
   }
 
-
-  const handleDeleteUser = async (user: any) => {
-  // Confirmation dialog
-  const confirmed = window.confirm(
-    `Are you sure you want to delete ${user.first_name} ${user.last_name}?\n\n` +
-    `This will permanently delete:\n` +
-    `- Their account\n` +
-    `- All their submissions\n\n` +
-    `This action cannot be undone.`
-  );
-  
-  if (!confirmed) return;
-  
-  try {
-    await api.deleteUser(user.id);
-    toast({
-      title: "User Deleted",
-      description: `${user.first_name} ${user.last_name} has been deleted.`,
-    });
-    // Refresh the users list
-    loadUsers();
-  } catch (error: any) {
-    toast({
-      title: "Error",
-      description: error.message || "Failed to delete user",
-      variant: "destructive",
-    });
-  }
-};
-
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(newUser.email)) {
@@ -159,6 +129,25 @@ const [newUser, setNewUser] = useState({
   }
 };
 
+const handleDeleteUser = async (user: User) => {
+  const confirmed = window.confirm(
+    `Are you sure you want to delete ${user.first_name} ${user.last_name}?\n\n` +
+    `This will permanently delete:\n` +
+    `- Their account\n` +
+    `- All their submissions\n\n` +
+    `This action cannot be undone.`
+  );
+  
+  if (!confirmed) return;
+  
+  try {
+    await api.deleteUser(user.id);
+    toast.success(`${user.first_name} ${user.last_name} has been deleted`);
+    fetchUsers();
+  } catch (error: any) {
+    toast.error(error.message || 'Failed to delete user');
+  }
+};
 
 
   const getRoleBadge = (role: string) => {
