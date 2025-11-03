@@ -131,7 +131,7 @@ const handleDownloadDocument = async () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = submission.trust_document_filename || 'document.pdf';
+    a.download = submission.document_filename || 'document.pdf';
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -222,7 +222,7 @@ const handleDownloadDocument = async () => {
             </Card>
 
             {/* Document Card  */}
-            {submission.trust_document_filename && (
+           {submission.document_filename && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -233,7 +233,7 @@ const handleDownloadDocument = async () => {
                 <CardContent className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Uploaded Document</p>
-                    <p className="font-medium">{submission.trust_document_filename}</p>
+                    <p className="font-medium">{submission.document_filename}</p>
                   </div>
 
                   <div className="flex gap-2">
