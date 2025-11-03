@@ -13,6 +13,12 @@ const Status = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [submission, setSubmission] = useState<any>(null);
+  useEffect(() => {
+  if (submission) {
+    console.log("Submission data:", submission);
+    console.log("Has document?", submission.trust_document_filename);
+  }
+}, [submission]);
   const [summarizing, setSummarizing] = useState(false);
   const [summary, setSummary] = useState<string>("");
 
