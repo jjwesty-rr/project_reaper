@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -36,6 +37,17 @@ export const ContactInfoStep = ({ data, onNext, onSkipToReview }: ContactInfoSte
       address: data?.address || "",
     },
   });
+
+  useEffect(() => {
+  if (data?.name || data?.email) {
+    form.reset({
+      name: data?.name || "",
+      phone: data?.phone || "",
+      email: data?.email || "",
+      address: data?.address || "",
+    });
+  }
+}, [data, form]);
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-numeric characters
