@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { api } from '@/integrations/supabase/client';
+
+
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -13,7 +16,14 @@ const Profile = () => {
       <div className="container mx-auto max-w-4xl">
         <Button
           variant="ghost"
-          onClick={() => navigate("/status")}
+          onClick={async () => {
+              const submissions = await api.getMySubmissions();
+              if (submissions && submissions.length > 0) {
+                navigate(`/status/${submissions[0].id}`);
+              } else {
+                navigate("/intake");
+              }
+            }}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
