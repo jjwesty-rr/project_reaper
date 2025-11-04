@@ -13,7 +13,7 @@ const Profile = () => {
       <div className="container mx-auto max-w-4xl">
         <Button
           variant="ghost"
-          onClick={() => navigate("/home")}
+          onClick={() => navigate("/status")}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
