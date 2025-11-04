@@ -15,10 +15,10 @@ export const getStateLimits = async (): Promise<Record<string, number>> => {
 };
 
 export const determineReferralType = async (data: IntakeFormData): Promise<IntakeFormData['referralType']> => {
-  const { hasTrust, hasContestingBeneficiaries, totalNetAssetValue, decedentInfo, assets } = data;
+  const { hasEstatePlan, hasContestingBeneficiaries, totalNetAssetValue, decedentInfo, assets } = data;
   
-  // Trust Administration: If trust exists
-  if (hasTrust) {
+  // Check for trust first  
+  if (hasEstatePlan) {
     return 'trust_administration';
   }
   
