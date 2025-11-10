@@ -156,9 +156,12 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
           )}
 
           {/* Document Upload (Only shows if they picked Trust or Will) */}
-          {watchHasEstatePlan === "yes" && (watchEstatePlanType === "trust" || watchEstatePlanType === "will") && (
+          {/* Document Upload (Shows if they picked Trust, Will, or Unknown) */}
+          {watchHasEstatePlan === "yes" && watchEstatePlanType && (
             <div className="space-y-2">
-              <FormLabel>Upload {watchEstatePlanType === "trust" ? "Trust" : "Will"} Document (Optional)</FormLabel>
+              <FormLabel>
+                  Upload {watchEstatePlanType === "trust" ? "Trust" : watchEstatePlanType === "will" ? "Will" : "Estate Plan"} Document (Optional)
+              </FormLabel>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                 {!selectedFile && !existingFileName ? (
                   <div className="space-y-2">
