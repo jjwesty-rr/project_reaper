@@ -39,15 +39,15 @@ export const ContactInfoStep = ({ data, onNext, onSkipToReview }: ContactInfoSte
   });
 
   useEffect(() => {
-  if (data?.name || data?.email) {
-    form.reset({
-      name: data?.name || "",
-      phone: data?.phone || "",
-      email: data?.email || "",
-      address: data?.address || "",
-    });
-  }
-}, [data, form]);
+    if (data?.name || data?.email) {
+      form.reset({
+        name: data?.name || "",
+        phone: data?.phone || "",
+        email: data?.email || "",
+        address: data?.address || "",
+      });
+    }
+  }, [data, form]);
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-numeric characters
