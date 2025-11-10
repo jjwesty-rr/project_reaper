@@ -158,29 +158,41 @@ export const AssetsStep = ({ data, onNext, onBack, onSkipToReview }: AssetsStepP
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Ownership Status</Label>
-              <RadioGroup
-                value={asset.ownership}
-                onValueChange={(value) =>
-                  updateAsset(index, { ownership: value as "sole" | "co-owned" })
-                }
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="sole" id={`sole-${index}`} />
-                  <label htmlFor={`sole-${index}`} className="cursor-pointer">
-                    Solely Owned
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="co-owned" id={`co-owned-${index}`} />
-                  <label htmlFor={`co-owned-${index}`} className="cursor-pointer">
-                    Co-Owned
-                  </label>
-                </div>
-              </RadioGroup>
-            </div>
+<div className="space-y-2">
+  <Label>Ownership Status</Label>
+  <RadioGroup
+    value={asset.ownership}
+    onValueChange={(value) =>
+      updateAsset(index, { ownership: value as "sole" | "co-owned" })
+    }
+    className="flex gap-4"
+  >
+    <div className="flex items-center space-x-2">
+      <RadioGroupItem value="sole" id={`sole-${index}`} />
+      <label htmlFor={`sole-${index}`} className="cursor-pointer">
+        Solely Owned
+      </label>
+    </div>
+    <div className="flex items-center space-x-2">
+      <RadioGroupItem value="co-owned" id={`co-owned-${index}`} />
+      <label htmlFor={`co-owned-${index}`} className="cursor-pointer">
+        Co-Owned
+      </label>
+    </div>
+  </RadioGroup>
+  
+  {/* Show text field when co-owned is selected */}
+  {asset.ownership === "co-owned" && (
+    <div className="space-y-2 mt-4">
+      <Label>Co-Owner Information</Label>
+      <Input
+        placeholder="Enter co-owner name and relationship (e.g., Jane Doe - Spouse)"
+        value={asset.coOwnerInfo || ""}
+        onChange={(e) => updateAsset(index, { coOwnerInfo: e.target.value })}
+      />
+    </div>
+  )}
+</div>
 
             {data?.hasEstatePlan && data?.estatePlanType === 'trust' && (
   <div className="space-y-2">
