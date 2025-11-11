@@ -28,22 +28,22 @@ export const FormProgress = ({
 
   return (
     <nav aria-label="Progress" className="mb-8">
-      <ol className="flex items-center justify-between">
+      <ol className="flex items-center">
         {steps.map((step, stepIdx) => (
           <li
             key={step.id}
-            className="relative flex-1 flex items-center"
+            className="flex items-center"
           >
             <div 
               className={cn(
-                "flex flex-col items-center flex-shrink-0",
+                "flex flex-col items-center",
                 allowClickableSteps && "cursor-pointer group"
               )}
               onClick={() => handleStepClick(step.id)}
             >
               <div
                 className={cn(
-                  "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all",
+                  "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all",
                   step.id < currentStep
                     ? "border-primary bg-primary"
                     : step.id === currentStep
@@ -67,10 +67,10 @@ export const FormProgress = ({
                   </span>
                 )}
               </div>
-              <div className="mt-2 text-center">
+              <div className="mt-2 text-center min-w-[80px]">
                 <span
                   className={cn(
-                    "text-xs font-medium whitespace-nowrap",
+                    "text-xs font-medium",
                     step.id === currentStep
                       ? "text-primary"
                       : step.id < currentStep
@@ -88,7 +88,7 @@ export const FormProgress = ({
             {stepIdx !== steps.length - 1 && (
               <div
                 className={cn(
-                  "flex-1 h-0.5 mx-2",
+                  "h-0.5 w-16 lg:w-24",
                   step.id < currentStep ? "bg-primary" : "bg-border"
                 )}
               />
