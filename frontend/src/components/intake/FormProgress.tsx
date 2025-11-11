@@ -32,53 +32,40 @@ export const FormProgress = ({
         {steps.map((step, stepIdx) => (
           <li
             key={step.id}
-            className={cn(
-              "relative flex-1",
-              stepIdx !== steps.length - 1 ? "pr-8 sm:pr-20" : ""
-            )}
+            className="relative flex-1 flex items-center"
           >
             <div 
               className={cn(
-                "flex flex-col items-center",
+                "flex flex-col items-center flex-shrink-0",
                 allowClickableSteps && "cursor-pointer group"
               )}
               onClick={() => handleStepClick(step.id)}
             >
-              <div className="flex items-center">
-                {stepIdx !== steps.length - 1 && (
-                  <div
-                    className={cn(
-                      "absolute left-1/2 top-4 h-0.5 w-full -translate-x-1/2",
-                      step.id < currentStep ? "bg-primary" : "bg-border"
-                    )}
-                  />
+              <div
+                className={cn(
+                  "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all",
+                  step.id < currentStep
+                    ? "border-primary bg-primary"
+                    : step.id === currentStep
+                    ? "border-primary bg-background"
+                    : "border-border bg-background",
+                  allowClickableSteps && "group-hover:scale-110 group-hover:shadow-md"
                 )}
-                <div
-                  className={cn(
-                    "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all",
-                    step.id < currentStep
-                      ? "border-primary bg-primary"
-                      : step.id === currentStep
-                      ? "border-primary bg-background"
-                      : "border-border bg-background",
-                    allowClickableSteps && "group-hover:scale-110 group-hover:shadow-md"
-                  )}
-                >
-                  {step.id < currentStep ? (
-                    <Check className="h-5 w-5 text-primary-foreground" />
-                  ) : (
-                    <span
-                      className={cn(
-                        "text-sm font-semibold",
-                        step.id === currentStep
-                          ? "text-primary"
-                          : "text-muted-foreground"
-                      )}
-                    >
-                      {step.id}
-                    </span>
-                  )}
-                </div>
+              >
+                {step.id < currentStep ? (
+                  <Check className="h-5 w-5 text-primary-foreground" />
+                ) : (
+                  <span
+                    className={cn(
+                      "text-sm font-semibold",
+                      step.id === currentStep
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {step.id}
+                  </span>
+                )}
               </div>
               <div className="mt-2 text-center">
                 <span
@@ -96,6 +83,16 @@ export const FormProgress = ({
                 </span>
               </div>
             </div>
+            
+            {/* Connecting line - only show if not the last step */}
+            {stepIdx !== steps.length - 1 && (
+              <div
+                className={cn(
+                  "flex-1 h-0.5 mx-2",
+                  step.id < currentStep ? "bg-primary" : "bg-border"
+                )}
+              />
+            )}
           </li>
         ))}
       </ol>
