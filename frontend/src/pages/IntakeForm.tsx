@@ -15,7 +15,10 @@ import { api } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
-const steps = [
+// 🚩 FEATURE FLAG - Set to false to use original workflow
+const USE_NEW_WORKFLOW = true;
+
+const originalSteps = [
   { id: 1, name: "Contact", description: "Your information" },
   { id: 2, name: "Decedent", description: "Deceased information" },
   { id: 3, name: "Estate Plan", description: "Estate planning" },
@@ -24,6 +27,18 @@ const steps = [
   { id: 6, name: "Assets", description: "Asset details" },
   { id: 7, name: "Review", description: "Final review" },
 ];
+
+const newWorkflowSteps = [
+  { id: 1, name: "Contact", description: "Your information" },
+  { id: 2, name: "Decedent", description: "Deceased information" },
+  { id: 3, name: "Relationships", description: "Family structure" },  // Moved from position 4
+  { id: 4, name: "Estate Plan", description: "Estate planning" },      // Moved from position 3
+  { id: 5, name: "Representative", description: "Estate representative" },
+  { id: 6, name: "Assets", description: "Asset details" },
+  { id: 7, name: "Review", description: "Final review" },
+];
+
+const steps = USE_NEW_WORKFLOW ? newWorkflowSteps : originalSteps;
 
 const IntakeForm = () => {
   const [searchParams] = useSearchParams();
@@ -215,88 +230,177 @@ setFormData(transformedData);
   }
 
   const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <ContactInfoStep
-            data={formData.contactInfo}
-            onNext={(data) => {
-              updateFormData({ contactInfo: data as any });
-              handleNext();
-            }}
-            onSkipToReview={submissionId ? handleSkipToReview : undefined}
-          />
-        );
-     case 2:
-        return (
-          <DecedentInfoStep
-            data={formData.decedentInfo}
-            onNext={(data) => {
-              updateFormData({ decedentInfo: data as any });
-              handleNext();
-            }}
-            onBack={handleBack}
-            onSkipToReview={submissionId ? handleSkipToReview : undefined}
-          />
-        );
-      case 3:
-        return (
-          <TrustBeneficiaryStep
-            data={formData}
-            onNext={(data) => {
-              updateFormData(data);
-              handleNext();
-            }}
-            onBack={handleBack}
-            onSkipToReview={submissionId ? handleSkipToReview : undefined}
-          />
-        );
-      case 4:
-        return (
-          <FamilyInfoStep
-            data={formData}
-            onNext={(data) => {
-              updateFormData(data);
-              handleNext();
-            }}
-            onBack={handleBack}
-            onSkipToReview={submissionId ? handleSkipToReview : undefined}
-          />
-        );
-      case 5:
-        return (
-          <RepresentativeStep
-            data={formData}
-            onNext={(data) => {
-              updateFormData(data);
-              handleNext();
-            }}
-            onBack={handleBack}
-            onSkipToReview={submissionId ? handleSkipToReview : undefined}
-          />
-        );
-      case 6:
-        return (
-          <AssetsStep
-            data={formData}
-            onNext={(data) => {
-              updateFormData(data);
-              handleNext();
-            }}
-            onBack={handleBack}
-            onSkipToReview={submissionId ? handleSkipToReview : undefined}
-          />
-        );
-case 7:
-        return (
-          <ReviewStep
-            data={formData}
-            onBack={handleBack}
-            submissionId={submissionId?.toString() || null}
-          />
-        );
-      default:
-        return null;
+    // Map the step rendering based on which workflow we're using
+    if (USE_NEW_WORKFLOW) {
+      // New workflow order: Contact, Decedent, Relationships (Family), Estate Plan, Representative, Assets, Review
+      switch (currentStep) {
+        case 1:
+          return (
+            <ContactInfoStep
+              data={formData.contactInfo}
+              onNext={(data) => {
+                updateFormData({ contactInfo: data as any });
+                handleNext();
+              }}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 2:
+          return (
+            <DecedentInfoStep
+              data={formData.decedentInfo}
+              onNext={(data) => {
+                updateFormData({ decedentInfo: data as any });
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 3:  // Relationships (was Family at position 4)
+          return (
+            <FamilyInfoStep
+              data={formData}
+              onNext={(data) => {
+                updateFormData(data);
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 4:  // Estate Plan (was at position 3)
+          return (
+            <TrustBeneficiaryStep
+              data={formData}
+              onNext={(data) => {
+                updateFormData(data);
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 5:
+          return (
+            <RepresentativeStep
+              data={formData}
+              onNext={(data) => {
+                updateFormData(data);
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 6:
+          return (
+            <AssetsStep
+              data={formData}
+              onNext={(data) => {
+                updateFormData(data);
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 7:
+          return (
+            <ReviewStep
+              data={formData}
+              onBack={handleBack}
+              submissionId={submissionId?.toString() || null}
+            />
+          );
+        default:
+          return null;
+      }
+    } else {
+      // Original workflow order: Contact, Decedent, Estate Plan, Family, Representative, Assets, Review
+      switch (currentStep) {
+        case 1:
+          return (
+            <ContactInfoStep
+              data={formData.contactInfo}
+              onNext={(data) => {
+                updateFormData({ contactInfo: data as any });
+                handleNext();
+              }}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 2:
+          return (
+            <DecedentInfoStep
+              data={formData.decedentInfo}
+              onNext={(data) => {
+                updateFormData({ decedentInfo: data as any });
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 3:
+          return (
+            <TrustBeneficiaryStep
+              data={formData}
+              onNext={(data) => {
+                updateFormData(data);
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 4:
+          return (
+            <FamilyInfoStep
+              data={formData}
+              onNext={(data) => {
+                updateFormData(data);
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 5:
+          return (
+            <RepresentativeStep
+              data={formData}
+              onNext={(data) => {
+                updateFormData(data);
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 6:
+          return (
+            <AssetsStep
+              data={formData}
+              onNext={(data) => {
+                updateFormData(data);
+                handleNext();
+              }}
+              onBack={handleBack}
+              onSkipToReview={submissionId ? handleSkipToReview : undefined}
+            />
+          );
+        case 7:
+          return (
+            <ReviewStep
+              data={formData}
+              onBack={handleBack}
+              submissionId={submissionId?.toString() || null}
+            />
+          );
+        default:
+          return null;
+      }
     }
   };
 
