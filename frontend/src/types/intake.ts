@@ -93,4 +93,18 @@ export interface IntakeFormData {
   
   // Determination
   referralType?: 'affidavits' | 'informal_probate' | 'formal_probate' | 'trust_administration';
+
+}
+
+export interface DecedentInfo {
+  name: string;
+  dateOfBirth: string;
+  dateOfDeath: string;
+  domicileState: string;
+  diedInDomicileState: boolean;
+  stateOfDeath?: string;
+  // Add these new fields:
+  hasDeathCertificate?: boolean;
+  deathCertificateDocument?: File;
+  deathCertificateDocumentName?: string;
 }
