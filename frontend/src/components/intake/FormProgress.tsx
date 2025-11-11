@@ -28,27 +28,28 @@ export const FormProgress = ({
 
   return (
     <nav aria-label="Progress" className="mb-8">
-      <ol className="flex items-center">
+      <ol className="flex items-start justify-between w-full">
         {steps.map((step, stepIdx) => (
           <li
             key={step.id}
-            className="flex items-center"
+            className="flex flex-col items-center flex-1 relative"
           >
+            {/* Circle */}
             <div 
               className={cn(
-                "flex flex-col items-center",
+                "flex flex-col items-center z-10",
                 allowClickableSteps && "cursor-pointer group"
               )}
               onClick={() => handleStepClick(step.id)}
             >
               <div
                 className={cn(
-                  "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all",
+                  "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all bg-background",
                   step.id < currentStep
                     ? "border-primary bg-primary"
                     : step.id === currentStep
-                    ? "border-primary bg-background"
-                    : "border-border bg-background",
+                    ? "border-primary"
+                    : "border-border",
                   allowClickableSteps && "group-hover:scale-110 group-hover:shadow-md"
                 )}
               >
@@ -67,10 +68,12 @@ export const FormProgress = ({
                   </span>
                 )}
               </div>
-              <div className="mt-2 text-center min-w-[80px]">
+              
+              {/* Label */}
+              <div className="mt-3 text-center px-1">
                 <span
                   className={cn(
-                    "text-xs font-medium",
+                    "text-xs font-medium block",
                     step.id === currentStep
                       ? "text-primary"
                       : step.id < currentStep
@@ -84,11 +87,11 @@ export const FormProgress = ({
               </div>
             </div>
             
-            {/* Connecting line - only show if not the last step */}
+            {/* Connecting line - positioned absolutely behind the circles */}
             {stepIdx !== steps.length - 1 && (
               <div
                 className={cn(
-                  "h-0.5 w-16 lg:w-24",
+                  "absolute top-5 left-1/2 right-0 h-0.5 -translate-y-1/2",
                   step.id < currentStep ? "bg-primary" : "bg-border"
                 )}
               />
