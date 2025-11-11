@@ -422,14 +422,16 @@ setFormData(transformedData);
 
 
         <Card className="p-8">
-          <FormProgress 
-            steps={steps} 
-            currentStep={currentStep}
-            onStepClick={handleStepClick}
-            allowClickableSteps={!!submissionId}
-          />
-          {renderStep()}
-        </Card>
+  <div className="mb-8 overflow-x-auto">
+    <FormProgress 
+      steps={steps} 
+      currentStep={currentStep}
+      onStepClick={handleStepClick}
+      allowClickableSteps={!!submissionId}
+    />
+  </div>
+  {renderStep()}
+</Card>
      </div>
     </div>
   </>
