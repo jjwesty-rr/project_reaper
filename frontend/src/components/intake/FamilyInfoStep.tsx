@@ -334,7 +334,7 @@ export const FamilyInfoStep = ({ data, onNext, onBack, onSkipToReview }: FamilyI
                   Skip to Review
                 </Button>
               )}
-              <Button type="submit" size="lg">
+              <Button type="submit">
                 Continue
               </Button>
             </div>

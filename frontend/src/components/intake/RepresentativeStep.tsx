@@ -306,7 +306,7 @@ const watchRelationship = form.watch("relationshipToDecedent");
                   Skip to Review
                 </Button>
               )}
-              <Button type="submit" size="lg">
+              <Button type="submit" >
                 Continue
               </Button>
             </div>

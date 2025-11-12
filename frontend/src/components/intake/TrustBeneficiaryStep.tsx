@@ -277,7 +277,7 @@ export const TrustBeneficiaryStep = ({ data, onNext, onBack, onSkipToReview }: T
                   Skip to Review
                 </Button>
               )}
-              <Button type="submit" size="lg">
+              <Button type="submit" >
                 Continue
               </Button>
             </div>

@@ -49,13 +49,13 @@ const REFERRAL_TYPE_INFO = {
 };
 
 export const ReviewStep = ({ data, onBack, submissionId }: ReviewStepProps) => {
-    console.log('=== REVIEW STEP DEBUG ===');
-  console.log('hasTrust value:', data.hasTrust);
-  console.log('hasTrust type:', typeof data.hasTrust);
-  console.log('hasContestingBeneficiaries:', data.hasContestingBeneficiaries);
-  console.log('hasContestingBeneficiaries type:', typeof data.hasContestingBeneficiaries);
-  console.log('Full data:', data);
-  console.log('========================');
+console.log('=== REVIEW STEP DEBUG ===');
+console.log('hasEstatePlan value:', data.hasEstatePlan);
+console.log('hasEstatePlan type:', typeof data.hasEstatePlan);
+console.log('hasContestingBeneficiaries:', data.hasContestingBeneficiaries);
+console.log('hasContestingBeneficiaries type:', typeof data.hasContestingBeneficiaries);
+console.log('Full data:', data);
+console.log('========================');
   const { toast } = useToast();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);

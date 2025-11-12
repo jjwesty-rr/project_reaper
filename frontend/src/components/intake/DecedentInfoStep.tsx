@@ -341,7 +341,7 @@ export const DecedentInfoStep = ({ data, onNext, onBack, onSkipToReview }: Deced
                   Skip to Review
                 </Button>
               )}
-              <Button type="submit" size="lg">
+              <Button type="submit" >
                 Continue
               </Button>
             </div>

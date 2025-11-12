@@ -156,7 +156,7 @@ export const ContactInfoStep = ({ data, onNext, onSkipToReview }: ContactInfoSte
                 Skip to Review
               </Button>
             )}
-            <Button type="submit" size="lg" className={onSkipToReview ? "" : "ml-auto"}>
+            <Button type="submit" className={onSkipToReview ? "" : "ml-auto"}>
               Continue
             </Button>
           </div>

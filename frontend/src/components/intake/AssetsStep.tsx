@@ -298,7 +298,7 @@ export const AssetsStep = ({ data, onNext, onBack, onSkipToReview }: AssetsStepP
               Skip to Review
             </Button>
           )}
-          <Button onClick={handleSubmit} size="lg" disabled={assets.length === 0}>
+          <Button onClick={handleSubmit} disabled={assets.length === 0}>
             Continue to Review
           </Button>
         </div>
