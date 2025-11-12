@@ -28,16 +28,28 @@ export const FormProgress = ({
 
   return (
     <nav aria-label="Progress" className="mb-8">
-      <ol className="flex items-start justify-between w-full">
+      <ol className="flex items-start justify-between w-full relative">
+        {/* Background line that spans the entire width */}
+        <div className="absolute top-5 left-0 right-0 h-0.5 bg-border" style={{ left: 'calc(100% / 14)', right: 'calc(100% / 14)' }} />
+        
+        {/* Progress line that fills based on current step */}
+        <div 
+          className="absolute top-5 h-0.5 bg-primary transition-all duration-300"
+          style={{ 
+            left: 'calc(100% / 14)',
+            width: `calc(${((currentStep - 1) / (steps.length - 1)) * 100}% - 100% / 7)`
+          }} 
+        />
+        
         {steps.map((step, stepIdx) => (
           <li
             key={step.id}
-            className="flex flex-col items-center flex-1 relative"
+            className="flex flex-col items-center flex-1 relative z-10"
           >
             {/* Circle */}
             <div 
               className={cn(
-                "flex flex-col items-center z-10",
+                "flex flex-col items-center",
                 allowClickableSteps && "cursor-pointer group"
               )}
               onClick={() => handleStepClick(step.id)}
@@ -86,16 +98,6 @@ export const FormProgress = ({
                 </span>
               </div>
             </div>
-            
-            {/* Connecting line - positioned absolutely behind the circles */}
-            {stepIdx !== steps.length - 1 && (
-              <div
-                className={cn(
-                  "absolute top-5 left-1/2 right-0 h-0.5 -translate-y-1/2",
-                  step.id < currentStep ? "bg-primary" : "bg-border"
-                )}
-              />
-            )}
           </li>
         ))}
       </ol>
