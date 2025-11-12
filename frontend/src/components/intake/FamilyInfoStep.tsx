@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -35,11 +35,15 @@ interface FamilyInfoStepProps {
 
 export const FamilyInfoStep = ({ data, onNext, onBack, onSkipToReview }: FamilyInfoStepProps) => {
   const [children, setChildren] = useState(data?.children || []);
+  
+  // Check if user is the spouse
+  const userIsSpouse = data?.contactInfo?.relationshipToDecedent === "Spouse";
 
   const form = useForm<z.infer<typeof familyInfoSchema>>({
     resolver: zodResolver(familyInfoSchema),
     defaultValues: {
-      isMarried: data?.isMarried !== undefined ? (data.isMarried ? "yes" : "no") : undefined,
+      // If user is spouse, automatically set isMarried to "yes"
+      isMarried: userIsSpouse ? "yes" : (data?.isMarried !== undefined ? (data.isMarried ? "yes" : "no") : undefined),
       spouseName: data?.spouseInfo?.name || "",
       spouseEmail: data?.spouseInfo?.email || "",
       spousePhone: data?.spouseInfo?.phone || "",
@@ -48,12 +52,15 @@ export const FamilyInfoStep = ({ data, onNext, onBack, onSkipToReview }: FamilyI
     },
   });
 
-   // ADD THIS DEBUG CODE:
-  console.log("=== FAMILY FORM INIT ===");
-  console.log("Incoming data:", data);
-  console.log("Form default values:", form.formState.defaultValues);
-  console.log("isMarried default:", data?.isMarried !== undefined ? (data.isMarried ? "yes" : "no") : undefined);
-  console.log("hasChildren default:", data?.hasChildren !== undefined ? (data.hasChildren ? "yes" : "no") : undefined);
+  // Auto-fill spouse info from contact info if user is the spouse
+  useEffect(() => {
+    if (userIsSpouse && data?.contactInfo) {
+      form.setValue("spouseName", data.contactInfo.name || "");
+      form.setValue("spouseEmail", data.contactInfo.email || "");
+      form.setValue("spousePhone", data.contactInfo.phone || "");
+      form.setValue("spouseAddress", data.contactInfo.address || "");
+    }
+  }, [userIsSpouse, data?.contactInfo, form]);
 
   const watchIsMarried = form.watch("isMarried");
   const watchHasChildren = form.watch("hasChildren");
@@ -85,12 +92,7 @@ export const FamilyInfoStep = ({ data, onNext, onBack, onSkipToReview }: FamilyI
     setChildren(updated);
   };
 
-   const onSubmit = (values: z.infer<typeof familyInfoSchema>) => {
-    console.log("=== FAMILY INFO SUBMIT ===");
-    console.log("Form values:", values);
-    console.log("isMarried:", values.isMarried);
-    console.log("hasChildren:", values.hasChildren);
-    console.log("Children array:", children);
+  const onSubmit = (values: z.infer<typeof familyInfoSchema>) => {
     const formData: Partial<IntakeFormData> = {
       isMarried: values.isMarried === "yes",
       hasChildren: values.hasChildren === "yes",
@@ -119,45 +121,53 @@ export const FamilyInfoStep = ({ data, onNext, onBack, onSkipToReview }: FamilyI
           Family Information
         </h2>
         <p className="text-muted-foreground">
-          Please provide information about the decedent's spouse and children.
+          Please provide information about the decedent's {userIsSpouse ? "children" : "spouse and children"}.
         </p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="isMarried"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Was the decedent married at the time of death?</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={(value) => {
-                      console.log("isMarried radio changed to:", value);
-                      field.onChange(value);
-                    }}
-                    defaultValue={field.value}
-                    className="flex gap-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="married-yes" />
-                      <label htmlFor="married-yes" className="cursor-pointer">Yes</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="married-no" />
-                      <label htmlFor="married-no" className="cursor-pointer">No</label>
-                    </div>
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Only show marriage question if user is NOT the spouse */}
+          {!userIsSpouse && (
+            <FormField
+              control={form.control}
+              name="isMarried"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Was the decedent married at the time of death?</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes" id="married-yes" />
+                        <label htmlFor="married-yes" className="cursor-pointer">Yes</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no" id="married-no" />
+                        <label htmlFor="married-no" className="cursor-pointer">No</label>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
+          {/* Show spouse info if married (either auto-filled or manually selected) */}
           {watchIsMarried === "yes" && (
             <Card className="p-4 space-y-4">
-              <h3 className="font-semibold text-lg">Spouse Information</h3>
+              <div>
+                <h3 className="font-semibold text-lg">Spouse Information</h3>
+                {userIsSpouse && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Your information has been pre-filled. Please review and update if needed.
+                  </p>
+                )}
+              </div>
               
               <FormField
                 control={form.control}
@@ -234,10 +244,7 @@ export const FamilyInfoStep = ({ data, onNext, onBack, onSkipToReview }: FamilyI
                 <FormLabel>Did the decedent have children?</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    onValueChange={(value) => {
-                      console.log("hasChildren radio changed to:", value);
-                      field.onChange(value);
-                    }}
+                    onValueChange={field.onChange}
                     defaultValue={field.value}
                     className="flex gap-4"
                   >
