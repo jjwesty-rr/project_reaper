@@ -14,6 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { InfoIcon } from "lucide-react";
 import {
@@ -26,6 +33,7 @@ import { IntakeFormData } from "@/types/intake";
 
 const representativeSchema = z.object({
   relationshipToDecedent: z.string().min(1, "Relationship is required").max(100),
+  otherRelationship: z.string().max(100).optional(),
   isExecutor: z.enum(["yes", "no"], { required_error: "Please select an option" }),
   representativeName: z.string().max(100).optional(),
   representativeEmail: z.string().email().max(255).optional().or(z.literal("")),
@@ -42,11 +50,12 @@ interface RepresentativeStepProps {
 }
 
 export const RepresentativeStep = ({ data, onNext, onBack, onSkipToReview }: RepresentativeStepProps) => {
-  const form = useForm<z.infer<typeof representativeSchema>>({
-    resolver: zodResolver(representativeSchema),
-    defaultValues: {
-      relationshipToDecedent: data?.contactInfo?.relationshipToDecedent || (data as any)?.relationship_to_deceased || "",
-      isExecutor: data?.contactInfo?.isExecutor !== undefined ? (data.contactInfo.isExecutor ? "yes" : "no") : undefined,
+const form = useForm<z.infer<typeof representativeSchema>>({
+  resolver: zodResolver(representativeSchema),
+  defaultValues: {
+    relationshipToDecedent: data?.contactInfo?.relationshipToDecedent || (data as any)?.relationship_to_deceased || "",
+    otherRelationship: data?.contactInfo?.otherRelationship || "",
+    isExecutor: data?.contactInfo?.isExecutor !== undefined ? (data.contactInfo.isExecutor ? "yes" : "no") : undefined,
       representativeName: data?.representativeInfo?.name || "",
       representativeEmail: data?.representativeInfo?.email || "",
       representativePhone: data?.representativeInfo?.phone || "",
@@ -56,6 +65,7 @@ export const RepresentativeStep = ({ data, onNext, onBack, onSkipToReview }: Rep
   });
 
   const watchIsExecutor = form.watch("isExecutor");
+const watchRelationship = form.watch("relationshipToDecedent");
 
   const formatPhoneNumber = (value: string) => {
     const phoneNumber = value.replace(/\D/g, '');
@@ -70,27 +80,19 @@ export const RepresentativeStep = ({ data, onNext, onBack, onSkipToReview }: Rep
     }
   };
 
-  const onSubmit = (values: z.infer<typeof representativeSchema>) => {
-    const formData: Partial<IntakeFormData> = {
-      contactInfo: {
-        ...data?.contactInfo!,
-        relationshipToDecedent: values.relationshipToDecedent,
-        isExecutor: values.isExecutor === "yes",
-      },
-    };
-
-    if (values.isExecutor === "no") {
-      formData.representativeInfo = {
-        name: values.representativeName || "",
-        email: values.representativeEmail || "",
-        phone: values.representativePhone || "",
-        address: values.representativeAddress || "",
-        reasonForRepresenting: values.reasonForRepresenting || "",
-      };
-    }
-
-    onNext(formData);
+ const onSubmit = (values: z.infer<typeof representativeSchema>) => {
+  const formData: Partial<IntakeFormData> = {
+    contactInfo: {
+      ...data?.contactInfo!,
+      relationshipToDecedent: values.relationshipToDecedent === "Other" && values.otherRelationship 
+        ? values.otherRelationship 
+        : values.relationshipToDecedent,
+      isExecutor: values.isExecutor === "yes",
+    },
   };
+
+  onNext(formData);
+};
 
   return (
     <div className="space-y-6">
@@ -106,18 +108,51 @@ export const RepresentativeStep = ({ data, onNext, onBack, onSkipToReview }: Rep
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
-            control={form.control}
-            name="relationshipToDecedent"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Your Relationship to the Decedent</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., Spouse, Child, Sibling, Friend" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+  control={form.control}
+  name="relationshipToDecedent"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Your Relationship to the Decedent</FormLabel>
+      <Select onValueChange={field.onChange} defaultValue={field.value}>
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Select your relationship" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          <SelectItem value="Spouse">Spouse</SelectItem>
+          <SelectItem value="Child">Child</SelectItem>
+          <SelectItem value="Parent">Parent</SelectItem>
+          <SelectItem value="Sibling">Sibling</SelectItem>
+          <SelectItem value="Grandchild">Grandchild</SelectItem>
+          <SelectItem value="Niece/Nephew">Niece/Nephew</SelectItem>
+          <SelectItem value="Friend">Friend</SelectItem>
+          <SelectItem value="Attorney">Attorney</SelectItem>
+          <SelectItem value="Other Family">Other Family</SelectItem>
+          <SelectItem value="Other">Other</SelectItem>
+        </SelectContent>
+      </Select>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
+{/* Show text input when "Other" is selected */}
+{watchRelationship === "Other" && (
+  <FormField
+    control={form.control}
+    name="otherRelationship"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Please specify your relationship</FormLabel>
+        <FormControl>
+          <Input placeholder="e.g., Cousin, Business Partner, Neighbor" {...field} />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+)}
 
           <FormField
             control={form.control}

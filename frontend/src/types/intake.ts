@@ -4,6 +4,7 @@ export interface ContactInfo {
   email: string;
   address: string;
   relationshipToDecedent: string;
+   otherRelationship?: string;
   isExecutor: boolean;
 }
 
