@@ -31,9 +31,9 @@ const originalSteps = [
 const newWorkflowSteps = [
   { id: 1, name: "Contact", description: "Your information" },
   { id: 2, name: "Decedent", description: "Deceased information" },
-  { id: 3, name: "Representative", description: "Estate representative" },  // Moved from position 5
-  { id: 4, name: "Relationships", description: "Family structure" },        // Moved from position 4
-  { id: 5, name: "Estate Plan", description: "Estate planning" },           // Moved from position 3
+  { id: 3, name: "Representative", description: "Estate representative" },
+  { id: 4, name: "Estate Plan", description: "Estate planning" },           // Swapped
+  { id: 5, name: "Relationships", description: "Family structure" },        // Swapped
   { id: 6, name: "Assets", description: "Asset details" },
   { id: 7, name: "Review", description: "Final review" },
 ];
@@ -269,30 +269,30 @@ setFormData(transformedData);
           onSkipToReview={submissionId ? handleSkipToReview : undefined}
         />
       );
-    case 4:  // Relationships (was Family at position 4)
-      return (
-        <FamilyInfoStep
-          data={formData}
-          onNext={(data) => {
-            updateFormData(data);
-            handleNext();
-          }}
-          onBack={handleBack}
-          onSkipToReview={submissionId ? handleSkipToReview : undefined}
-        />
-      );
-    case 5:  // Estate Plan (was at position 3)
-      return (
-        <TrustBeneficiaryStep
-          data={formData}
-          onNext={(data) => {
-            updateFormData(data);
-            handleNext();
-          }}
-          onBack={handleBack}
-          onSkipToReview={submissionId ? handleSkipToReview : undefined}
-        />
-      );
+   case 4:  // Relationships (was Family)
+  return (
+    <FamilyInfoStep
+      data={formData}
+      onNext={(data) => {
+        updateFormData(data);
+        handleNext();
+      }}
+      onBack={handleBack}
+      onSkipToReview={submissionId ? handleSkipToReview : undefined}
+    />
+  );
+case 5:  // Estate Plan
+  return (
+    <TrustBeneficiaryStep
+      data={formData}
+      onNext={(data) => {
+        updateFormData(data);
+        handleNext();
+      }}
+      onBack={handleBack}
+      onSkipToReview={submissionId ? handleSkipToReview : undefined}
+    />
+  );
     case 6:
       return (
         <AssetsStep
