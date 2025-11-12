@@ -32,8 +32,8 @@ const newWorkflowSteps = [
   { id: 1, name: "Contact", description: "Your information" },
   { id: 2, name: "Decedent", description: "Deceased information" },
   { id: 3, name: "Representative", description: "Estate representative" },
-  { id: 4, name: "Estate Plan", description: "Estate planning" },           // Swapped
-  { id: 5, name: "Relationships", description: "Family structure" },        // Swapped
+  { id: 4, name: "Relationships", description: "Family structure" },
+  { id: 5, name: "Estate Plan", description: "Estate planning" },
   { id: 6, name: "Assets", description: "Asset details" },
   { id: 7, name: "Review", description: "Final review" },
 ];
@@ -231,8 +231,8 @@ setFormData(transformedData);
 
   const renderStep = () => {
     // Map the step rendering based on which workflow we're using
-    if (USE_NEW_WORKFLOW) {
-  // New workflow order: Contact, Decedent, Representative, Relationships (Family), Estate Plan, Assets, Review
+  if (USE_NEW_WORKFLOW) {
+  // New workflow order: Contact, Decedent, Representative, Relationships, Estate Plan, Assets, Review
   switch (currentStep) {
     case 1:
       return (
@@ -257,7 +257,7 @@ setFormData(transformedData);
           onSkipToReview={submissionId ? handleSkipToReview : undefined}
         />
       );
-    case 3:  // Representative (was at position 5)
+    case 3:  // Representative
       return (
         <RepresentativeStep
           data={formData}
@@ -269,31 +269,31 @@ setFormData(transformedData);
           onSkipToReview={submissionId ? handleSkipToReview : undefined}
         />
       );
-   case 4:  // Relationships (was Family)
-  return (
-    <FamilyInfoStep
-      data={formData}
-      onNext={(data) => {
-        updateFormData(data);
-        handleNext();
-      }}
-      onBack={handleBack}
-      onSkipToReview={submissionId ? handleSkipToReview : undefined}
-    />
-  );
-case 5:  // Estate Plan
-  return (
-    <TrustBeneficiaryStep
-      data={formData}
-      onNext={(data) => {
-        updateFormData(data);
-        handleNext();
-      }}
-      onBack={handleBack}
-      onSkipToReview={submissionId ? handleSkipToReview : undefined}
-    />
-  );
-    case 6:
+    case 4:  // Relationships (Family)
+      return (
+        <FamilyInfoStep
+          data={formData}
+          onNext={(data) => {
+            updateFormData(data);
+            handleNext();
+          }}
+          onBack={handleBack}
+          onSkipToReview={submissionId ? handleSkipToReview : undefined}
+        />
+      );
+    case 5:  // Estate Plan
+      return (
+        <TrustBeneficiaryStep
+          data={formData}
+          onNext={(data) => {
+            updateFormData(data);
+            handleNext();
+          }}
+          onBack={handleBack}
+          onSkipToReview={submissionId ? handleSkipToReview : undefined}
+        />
+      );
+    case 6:  // Assets
       return (
         <AssetsStep
           data={formData}
@@ -305,7 +305,7 @@ case 5:  // Estate Plan
           onSkipToReview={submissionId ? handleSkipToReview : undefined}
         />
       );
-    case 7:
+    case 7:  // Review
       return (
         <ReviewStep
           data={formData}
@@ -316,7 +316,7 @@ case 5:  // Estate Plan
     default:
       return null;
   }
-} else {
+}else {
       // Original workflow order: Contact, Decedent, Estate Plan, Family, Representative, Assets, Review
       switch (currentStep) {
         case 1:
