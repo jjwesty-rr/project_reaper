@@ -149,12 +149,15 @@ export const ContactInfoStep = ({ data, onNext, onSkipToReview }: ContactInfoSte
           <div className="flex justify-between pt-4">
             {onSkipToReview && (
               <Button 
-                type="button" 
-                variant="outline"
-                onClick={onSkipToReview}
-              >
-                Skip to Review
-              </Button>
+  type="button" 
+  variant="outline"
+  onClick={form.handleSubmit((values) => {
+    onSubmit(values);  // Save the data
+    onSkipToReview();   // Then skip to review
+  })}
+>
+  Skip to Review
+</Button>
             )}
             <Button type="submit" className={onSkipToReview ? "" : "ml-auto"}>
               Continue

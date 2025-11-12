@@ -288,21 +288,10 @@ export const AssetsStep = ({ data, onNext, onBack, onSkipToReview }: AssetsStepP
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <div className="flex gap-2">
-          {onSkipToReview && (
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={onSkipToReview}
-            >
-              Skip to Review
-            </Button>
-          )}
           <Button onClick={handleSubmit} disabled={assets.length === 0}>
             Continue to Review
           </Button>
         </div>
       </div>
-    </div>
   );
 };
