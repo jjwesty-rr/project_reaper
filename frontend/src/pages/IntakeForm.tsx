@@ -32,7 +32,7 @@ const newWorkflowSteps = [
   { id: 1, name: "Contact", description: "Your information" },
   { id: 2, name: "Decedent", description: "Deceased information" },
   { id: 3, name: "Representative", description: "Estate representative" },
-  { id: 4, name: "Relationships", description: "Family structure" },
+  { id: 4, name: "Family", description: "Family structure" },  
   { id: 5, name: "Estate Plan", description: "Estate planning" },
   { id: 6, name: "Assets", description: "Asset details" },
   { id: 7, name: "Review", description: "Final review" },
