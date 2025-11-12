@@ -26,18 +26,27 @@ export const FormProgress = ({
     }
   };
 
+  // Calculate progress percentage (0% to 100%)
+  const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
+
   return (
     <nav aria-label="Progress" className="mb-8">
       <ol className="flex items-start justify-between w-full relative">
         {/* Background line that spans the entire width */}
-        <div className="absolute top-5 left-0 right-0 h-0.5 bg-border" style={{ left: 'calc(100% / 14)', right: 'calc(100% / 14)' }} />
+        <div 
+          className="absolute top-5 h-0.5 bg-border" 
+          style={{ 
+            left: '7.14%',  /* 100% / 14 */
+            right: '7.14%'  /* 100% / 14 */
+          }} 
+        />
         
         {/* Progress line that fills based on current step */}
         <div 
           className="absolute top-5 h-0.5 bg-primary transition-all duration-300"
           style={{ 
-            left: 'calc(100% / 14)',
-            width: `calc(${((currentStep - 1) / (steps.length - 1)) * 100}% - 100% / 7)`
+            left: '7.14%',
+            width: `${progressPercentage * 0.8572}%`  /* 0.8572 = (1 - 2/14) to account for margins */
           }} 
         />
         
